@@ -15,20 +15,20 @@ public class Waves {
 		this.sampleRate = sampleRate;
 	}
 	
-	public double getWave(double hertz, double frame, double bendRate, WaveType type)
+	public double getWave(double hertz, double frame, WaveType type)
 	{
 		switch(type)
 		{
-		case sin: return sin(hertz, frame, bendRate);
+		case sin: return sin(hertz, frame);
 		case square: return square(hertz, frame);
 		case saw: return saw(hertz, frame);
 		case triangle: return triangle(hertz, frame);
-		default: return sin(hertz, frame, bendRate);
+		default: return sin(hertz, frame);
 		}
 	}
 	
 	//Returns a value between 0 and 1, inclusive
-	public double sin(double hertz, double frame, double bendRate)
+	public double sin(double hertz, double frame)
 	{
 		return (Math.sin(hertz * frame *(2 * Math.PI / sampleRate)) + 1)/2;
 	}
@@ -36,7 +36,7 @@ public class Waves {
 	//Returns a value between 0 and 1, inclusive
 	public double square(double hertz, double frame)
 	{
-		if(sin(hertz, frame, 0) > .5)
+		if(sin(hertz, frame) > .5)
 			return 1;
 		return 0;
 	}

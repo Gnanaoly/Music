@@ -20,9 +20,10 @@ public class MusicGenerator {
 	{
 		//return format(add(toneGenerator.toneFlat(440, 2, .1, 1, 100, Waves.WaveType.sin),
 		//		toneGenerator.toneFlat(261.25, 60, 1, 10, 100, Waves.WaveType.sin)));
-		double[][] AtoC = toneGenerator.toneBend(261.25, 440, 3, 60, 0, .1, 100, Waves.WaveType.sin);
+		double[][] AtoC = toneGenerator.toneBend(261.25, 440, 3, 0, 0, 100, Waves.WaveType.sin);
 		double[][] A = toneGenerator.toneFlat(261.25, 1, .1, 0, 100, Waves.WaveType.sin);
-		return(format(add(A, AtoC, 1)));
+		double[][] C = toneGenerator.toneFlat(440, 6, 0, .1, 100, Waves.WaveType.sin);
+		return(format(add(add(A, AtoC, 1), C, 4)));
 	}
 	
 	private byte[] format(double[][] music)

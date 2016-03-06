@@ -21,10 +21,10 @@ public class Tones {
 	public double[][] toneFlat(double hz, double duration,
 			double buildIn, double buildOut, double volume, Waves.WaveType type)
 	{
-		return toneBend(hz, hz, 0, duration, buildIn, buildOut, volume, type);
+		return toneBend(hz, hz, duration, buildIn, buildOut, volume, type);
 	}
 	
-	public double[][] toneBend(double hzStart, double hzEnd, double bendTime, double duration,
+	public double[][] toneBend(double hzStart, double hzEnd, double duration,
 			double buildIn, double buildOut, double volume, Waves.WaveType type)
 	{
 		int numFrames = (int) (sampleRate * duration);
@@ -34,17 +34,17 @@ public class Tones {
 		double vol = 0;
 		int buildOutStart = (int) (numFrames - volume/buildOutRate);
 		
-		double bendRate = getRate(bendTime, hzEnd-hzStart);
+		//We have to cut bendRate in half because the waves being compressed doubles the effect.
+		double bendRate = getRate(duration, hzEnd-hzStart) / 2;
 		double hz = hzStart;
 		
 		double[][] music = new double[numChannels][numFrames];
 		for (int frame = 0; frame < numFrames; frame++) {
 			if(frame >= buildOutStart) vol -= buildOutRate;
 			else if(vol < volume) vol += buildInRate;
-			if(hz != hzEnd) hz += bendRate;
-			if(Math.signum(hz - hzEnd) == Math.signum(bendRate)) hz = hzEnd;
+			hz += bendRate;
 			for (int channel = 0; channel < numChannels; channel++) {
-				music[channel][frame] = waveGenerator.getWave(hz, frame, bendRate, type) * vol;
+				music[channel][frame] = waveGenerator.getWave(hz, frame, type) * vol;
 			}
 		}
 		return music;
