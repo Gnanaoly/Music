@@ -47,6 +47,16 @@ public class Tones {
 				music[channel][frame] = waveGenerator.getWave(hz, frame, type) * vol;
 			}
 		}
+		
+		//Remove final partial wave so that we don't click
+		for(int frame = music[0].length-1; frame > 0; frame--) {
+			double val = music[0][frame];
+			for(int channel = 0; channel < numChannels; channel++) {
+				music[channel][frame] = 0;
+			}
+			if(val > 0 && music[0][frame-1] <= 0)
+				break;
+		}
 		return music;
 	}
 	

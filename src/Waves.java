@@ -15,6 +15,7 @@ public class Waves {
 		this.sampleRate = sampleRate;
 	}
 	
+	//Returns a value between -1 and 1, inclusive. Returns 0 for frame = 0.
 	public double getWave(double hertz, double frame, WaveType type)
 	{
 		switch(type)
@@ -27,37 +28,39 @@ public class Waves {
 		}
 	}
 	
-	//Returns a value between 0 and 1, inclusive
 	public double sin(double hertz, double frame)
 	{
-		return (Math.sin(hertz * frame *(2 * Math.PI / sampleRate)) + 1)/2;
+		return Math.sin(hertz * frame *(2 * Math.PI / sampleRate));
 	}
 	
-	//Returns a value between 0 and 1, inclusive
 	public double square(double hertz, double frame)
 	{
-		if(sin(hertz, frame) > .5)
+		if(sin(hertz, frame) > 0)
 			return 1;
-		return 0;
+		return -1;
 	}
 	
-	//Returns a value between 0 and 1, inclusive
 	public double saw(double hertz, double frame)
 	{
 		double period = sampleRate/hertz;
 		frame %= period;
-		return frame/period;
+		double amp = frame/period * 2;
+		if(amp < 1)
+			return amp;
+		return amp - 2;
 	}
 	
-	//Returns a value between 0 and 1, inclusive
+	
 	public double triangle(double hertz, double frame)
 	{
 		double period = sampleRate/hertz;
 		frame %= period;
-		double amp = 2 * frame/period;
+		double amp = 4 * frame/period;
 		if(amp < 1)
 			return amp;
-		return 2-amp;
+		if(amp < 3)
+			return 2-amp;
+		return -4+amp;
 	}
 	
 }

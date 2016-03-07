@@ -20,10 +20,24 @@ public class MusicGenerator {
 	{
 		//return format(add(toneGenerator.toneFlat(440, 2, .1, 1, 100, Waves.WaveType.sin),
 		//		toneGenerator.toneFlat(261.25, 60, 1, 10, 100, Waves.WaveType.sin)));
-		double[][] AtoC = toneGenerator.toneBend(261.25, 440, 3, 0, 0, 100, Waves.WaveType.sin);
-		double[][] A = toneGenerator.toneFlat(261.25, 1, .1, 0, 100, Waves.WaveType.sin);
-		double[][] C = toneGenerator.toneFlat(440, 6, 0, .1, 100, Waves.WaveType.sin);
-		return(format(add(add(A, AtoC, 1), C, 4)));
+		Waves.WaveType type = Waves.WaveType.square;
+		double[][] AtoC = toneGenerator.toneBend(261.25, 440, 2, 0, 0, 100, type);
+		double[][] A = toneGenerator.toneFlat(261.25, 1, .1, 0, 100, type);
+		double[][] C = toneGenerator.toneFlat(440, 1, 0, 0, 100, type);
+		double[][] CtoN = toneGenerator.toneBend(440, 400, 2, 0, 0, 100, type);
+		double[][] N = toneGenerator.toneFlat(400, 1, 0, .1, 100, type);
+		
+		return format(add(add(add(add(A, AtoC, 1), C, 3), CtoN, 4), N, 6));
+	}
+	
+	private double[][] declick(double[][] music)
+	{
+		for (int channel = 0; channel < numChannels; channel++) {
+			for (int frame = 0; frame < music[0].length; frame++) {
+				//if(music[channel])
+			}
+		}
+		return music;
 	}
 	
 	private byte[] format(double[][] music)
@@ -58,6 +72,22 @@ public class MusicGenerator {
 				ret[channel][frame] = mus1[channel][frame];
 			}
 		}
+		
+		int noClickOffset;
+		for(noClickOffset = offsetFrames; noClickOffset > 0; noClickOffset--)
+		{
+			boolean shouldBreak = false;
+			for(int channel = 0; channel < numChannels; channel++) {
+				if(ret[channel][noClickOffset] != 0)
+					shouldBreak = true;
+			}
+			if(shouldBreak) break;
+		}
+		if(2 * ret[0][noClickOffset] - ret[0][noClickOffset-1] < (ret[0][noClickOffset] - ret[0][noClickOffset-1]) / 2)
+			noClickOffset++;
+		if((double) (noClickOffset) / offsetFrames > .99)
+			offsetFrames = noClickOffset;
+		
 		for(int frame = 0; frame < mus2[0].length; frame++){
 			for(int channel = 0; channel < numChannels; channel++) {
 				ret[channel][frame+offsetFrames] += mus2[channel][frame];
