@@ -1,102 +1,124 @@
 
 public class Chord {
-	
-	private double[] notes;
+
+	private int[] scaleNotes;
+	private int[] chordNotes;
 	private double[] chromatic;
-	
-	//Just Temperament factors
-	private final double[] jt =
-		{1.0, 25.0/24, 9.0/8, 6.0/5, 5.0/4, 4.0/3, 45.0/32, 3.0/2, 8.0/5, 5.0/3, 9.0/5, 15.0/8};
-	
+
+	// Just Temperament factors
+	private final double[] jt = { 1.0, 25.0 / 24, 9.0 / 8, 6.0 / 5, 5.0 / 4, 4.0 / 3, 45.0 / 32, 3.0 / 2, 8.0 / 5,
+			5.0 / 3, 9.0 / 5, 15.0 / 8 };
+
 	public enum ChordType {
-		Major,
-		Dom7,
-		Minor,
-		Dim
+		Major, Dom7, Minor, Dim, Alt
 	}
 
-	public Chord(double rootHz, ChordType type)
-	{
-		notes = new double[7];
-		notes[0] = rootHz;
+	public Chord(double rootHz, ChordType type) {
+		switch (type) {
+		case Major:
+			setup(rootHz, new int[]{1,2,3,4,5,6,7}, new int[] { 1, 3, 5 });
+			break;
+		case Dom7:
+			setup(rootHz, new int[]{1,2,3,4,5,6,-7}, new int[] { 1, 3, 5, 7 });
+			break;
+		case Minor:
+			setup(rootHz, new int[]{1,2,-3,4,5,-6,7}, new int[] { 1, 3, 5 });
+			break;
+		case Dim:
+			setup(rootHz, new int[]{1,2,-3,4,-5,6,-7}, new int[] { 1, 3, 5 });
+			break;
+		case Alt:
+			setup(rootHz, new int[]{1,-2,-3,3,-5,-6,-7}, new int[] { 1, 3, 5 });
+			break;
+		default:
+			break;
+		}
+	}
+	
+	/*
+	 * For example,
+	 * Dorian:
+	 * 	noteNumbers = 1, 2, -3, 4, 5, 6, -7
+	 * 	notesInChord = 1, 3, 5 (or some other combo)
+	 *  numbersAreScaleNotes = false
+	 */
+	public Chord(double rootHz, int[] noteNumbers, int[] notesInChord, boolean numbersAreScaleNotes) {
+		if(numbersAreScaleNotes) {
+			setup(rootHz, null, notesInChord);
+			setScaleNotes(noteNumbers);
+		} else {
+			setup(rootHz, noteNumbers, notesInChord);
+		}
+	}
+
+	private void setup(double rootHz, int[] noteNumbers, int[] notesInChord) {
+		chordNotes = notesInChord;
 		chromatic = new double[12];
-		for(int i = 0; i < 12; i++) {
+		for (int i = 0; i < 12; i++) {
 			chromatic[i] = rootHz * jt[i];
 		}
-		switch(type) {
-		case Major: setupMajor();
-		break;
-		case Dom7: setupDom7();
-		break;
-		case Minor: setupMinor();
-		break;
-		case Dim: setupDim();
-		break;
-		default: break;
-		}
-	}
-	
-	double[] getAllNotes() {
-		return notes;
-	}
-	
-	double[] getTriad(int[] mod){
-		boolean[] include = new boolean[] {true, false, true, false, true, false, false};
-		if(mod != null) {
-			for (int i : mod) {
-				if (i > 0) {
-					include[i - 1] = true;
-				} else if (i < 0) {
-					include[i * -1 - 1] = false;
+		if(noteNumbers != null) {
+			scaleNotes = new int[noteNumbers.length];
+			for(int i = 0; i < scaleNotes.length; i++) {
+				switch(Math.abs(noteNumbers[i])) {
+				case 1: scaleNotes[i] = (noteNumbers[i] > 0)? 0 : 11;
+				break;
+				case 2: scaleNotes[i] = (noteNumbers[i] > 0)? 2 : 1;
+				break;
+				case 3: scaleNotes[i] = (noteNumbers[i] > 0)? 4 : 3;
+				break;
+				case 4: scaleNotes[i] = (noteNumbers[i] > 0)? 5 : 4;
+				break;
+				case 5: scaleNotes[i] = (noteNumbers[i] > 0)? 7 : 6;
+				break;
+				case 6: scaleNotes[i] = (noteNumbers[i] > 0)? 9 : 8;
+				break;
+				case 7: scaleNotes[i] = (noteNumbers[i] > 0)? 11 : 10;
+				default: break;
 				}
 			}
 		}
-		int num = 0;
-		for(boolean in : include)
-			if(in) num++;
-		double[] ret = new double[num];
-		int index = 0;
-		for(int i = 0; i < 7; i++) {
-			if(include[i])
-				ret[index++] = notes[i];
+		
+	}
+	
+	public int[] getScaleNotes() {
+		return scaleNotes;
+	}
+	
+	public void setScaleNotes(int[] scaleNotes) {
+		this.scaleNotes = scaleNotes;
+	}
+
+	public double[] getScaleNoteHz() {
+		double[] noteHz = new double[scaleNotes.length];
+		for(int i = 0; i < noteHz.length; i++) {
+			noteHz[i] = chromatic[scaleNotes[i]];
+		}
+		return noteHz;
+	}
+	
+	public int[] getTriadNumbers() {
+		return chordNotes;
+	}
+	
+	public void setTriadNumbers(int[] chordNotes) {
+		this.chordNotes = chordNotes;
+	}
+
+	public double[] getTriadHz() {
+		double[] ret = new double[chordNotes.length];
+		double[] notes = getScaleNoteHz();
+		for(int i = 0; i < chordNotes.length; i++) {
+			ret[i] = notes[chordNotes[i]-1];
 		}
 		return ret;
 	}
 	
-	private void setupMajor(){
-		notes[1] = chromatic[2];
-		notes[2] = chromatic[4];
-		notes[3] = chromatic[5];
-		notes[4] = chromatic[7];
-		notes[5] = chromatic[9];
-		notes[6] = chromatic[11];
+	@Override
+    public boolean equals(Object obj) {
+		if(!(obj instanceof Chord)) return false;
+		Chord other = (Chord) obj;
+		return (getScaleNoteHz().equals(other.getScaleNoteHz()) && getTriadHz().equals(other.getTriadHz()));
 	}
-	
-	private void setupDom7(){
-		notes[1] = chromatic[2];
-		notes[2] = chromatic[4];
-		notes[3] = chromatic[5];
-		notes[4] = chromatic[7];
-		notes[5] = chromatic[9];
-		notes[6] = chromatic[10];
-	}
-	
-	private void setupMinor(){
-		notes[1] = chromatic[2];
-		notes[2] = chromatic[3];
-		notes[3] = chromatic[5];
-		notes[4] = chromatic[7];
-		notes[5] = chromatic[8];
-		notes[6] = chromatic[10];
-	}
-	
-	private void setupDim(){
-		notes[1] = chromatic[2];
-		notes[2] = chromatic[3];
-		notes[3] = chromatic[5];
-		notes[4] = chromatic[6];
-		notes[5] = chromatic[8];
-		notes[6] = chromatic[10];
-	}
-	
+
 }
