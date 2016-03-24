@@ -59,5 +59,21 @@ public class Tones {
 		}
 		return music;
 	}
+	
+	public double[][] drumHit(double volume) {
+		double hz = 300;
+		double decay = .9995;
+		double finalVolume = volume / 100;
+		//volume * decay^numFrames = finalVolume
+		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
+		double[][] hit = new double[numChannels][numFrames];
+		for(int frame = 0; frame < numFrames; frame++) {
+			for (int channel = 0; channel < numChannels; channel++) {
+				hit[channel][frame] = waveGenerator.drum(hz, frame) * volume;
+			}
+			volume *= decay;
+		}
+		return hit;
+	}
 
 }

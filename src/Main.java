@@ -18,7 +18,7 @@ public class Main {
 		RandomUtil rand = new RandomUtil();
 		int[] values = new int[20];
 		for(int i = 0; i < 100000; i++) {
-			values[rand.randomSkewed(values.length, 1)]++;
+			values[rand.nextSkewed(values.length, 1)]++;
 		}
 		for(int i = 0; i < values.length; i++) {
 			System.out.println("values[" + i + "] = " + values[i]);

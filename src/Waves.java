@@ -1,3 +1,4 @@
+import java.util.Random;
 
 public class Waves {
 	
@@ -61,6 +62,11 @@ public class Waves {
 		if(amp < 3)
 			return 2-amp;
 		return -4+amp;
+	}
+	
+	public double drum(double hertz, double frame) {
+		Random random = new Random();
+		return random.nextDouble() * 2 - 1;
 	}
 	
 }

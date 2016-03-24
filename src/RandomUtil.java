@@ -10,10 +10,10 @@ public class RandomUtil extends Random{
 	/* 
 	 * includes 0, doesn't include num.
 	 * skew = 0 has even distribution,
-	 * skew < 0 skews to the start of the array,
-	 * skew > 0 skews to the end of the array.
+	 * skew < 0 skews toward zero,
+	 * skew > 0 skews to toward num.
 	 */
-	public int randomSkewed(int num, int skew) {
+	public int nextSkewed(int num, double skew) {
 		boolean positive = (skew >= 0);
 		skew = Math.abs(skew) + 1;
 		double[] values = new double[num];

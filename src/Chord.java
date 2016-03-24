@@ -16,19 +16,19 @@ public class Chord {
 	public Chord(double rootHz, ChordType type) {
 		switch (type) {
 		case Major:
-			setup(rootHz, new int[]{1,2,3,4,5,6,7}, new int[] { 1, 3, 5 });
+			setup(rootHz, rootHz, new int[]{1,2,3,4,5,6,7}, new int[] { 1, 3, 5 });
 			break;
 		case Dom7:
-			setup(rootHz, new int[]{1,2,3,4,5,6,-7}, new int[] { 1, 3, 5, 7 });
+			setup(rootHz, rootHz, new int[]{1,2,3,4,5,6,-7}, new int[] { 1, 3, 5, 7 });
 			break;
 		case Minor:
-			setup(rootHz, new int[]{1,2,-3,4,5,-6,7}, new int[] { 1, 3, 5 });
+			setup(rootHz, rootHz, new int[]{1,2,-3,4,5,-6,7}, new int[] { 1, 3, 5 });
 			break;
 		case Dim:
-			setup(rootHz, new int[]{1,2,-3,4,-5,6,-7}, new int[] { 1, 3, 5 });
+			setup(rootHz, rootHz, new int[]{1,2,-3,4,-5,6,-7}, new int[] { 1, 3, 5 });
 			break;
 		case Alt:
-			setup(rootHz, new int[]{1,-2,-3,3,-5,-6,-7}, new int[] { 1, 3, 5 });
+			setup(rootHz, rootHz, new int[]{1,-2,-3,3,-5,-6,-7}, new int[] { 1, 3, 5 });
 			break;
 		default:
 			break;
@@ -42,20 +42,26 @@ public class Chord {
 	 * 	notesInChord = 1, 3, 5 (or some other combo)
 	 *  numbersAreScaleNotes = false
 	 */
-	public Chord(double rootHz, int[] noteNumbers, int[] notesInChord, boolean numbersAreScaleNotes) {
+	public Chord(double rootHz, double baseHz, int[] noteNumbers, int[] notesInChord, boolean numbersAreScaleNotes) {
 		if(numbersAreScaleNotes) {
-			setup(rootHz, null, notesInChord);
+			setup(rootHz, baseHz, null, notesInChord);
 			setScaleNotes(noteNumbers);
 		} else {
-			setup(rootHz, noteNumbers, notesInChord);
+			setup(rootHz, baseHz, noteNumbers, notesInChord);
 		}
 	}
 
-	private void setup(double rootHz, int[] noteNumbers, int[] notesInChord) {
+	private void setup(double rootHz, double baseHz, int[] noteNumbers, int[] notesInChord) {
 		chordNotes = notesInChord;
 		chromatic = new double[12];
 		for (int i = 0; i < 12; i++) {
 			chromatic[i] = rootHz * jt[i];
+			while(chromatic[i] > baseHz * 2) {
+				chromatic[i] /= 2;
+			}
+			while(chromatic[i] < baseHz) {
+				chromatic[i] *= 2;
+			}
 		}
 		if(noteNumbers != null) {
 			scaleNotes = new int[noteNumbers.length];
@@ -97,6 +103,10 @@ public class Chord {
 		return noteHz;
 	}
 	
+	public double getRootHz() {
+		return chromatic[scaleNotes[0]];
+	}
+	
 	public int[] getTriadNumbers() {
 		return chordNotes;
 	}
@@ -118,7 +128,16 @@ public class Chord {
     public boolean equals(Object obj) {
 		if(!(obj instanceof Chord)) return false;
 		Chord other = (Chord) obj;
-		return (getScaleNoteHz().equals(other.getScaleNoteHz()) && getTriadHz().equals(other.getTriadHz()));
+		return arraysEqual(getScaleNoteHz(), other.getScaleNoteHz()) &&
+				arraysEqual(getTriadHz(), other.getTriadHz());
+	}
+	
+	private boolean arraysEqual(double[] a1, double[] a2) {
+		if(a1.length != a2.length) return false;
+		for(int i = 0; i < a1.length; i++) {
+			if(a1[i] != a2[i]) return false;
+		}
+		return true;
 	}
 
 }

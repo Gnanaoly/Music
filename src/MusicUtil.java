@@ -11,6 +11,7 @@ public class MusicUtil {
 		this.bitsPerSample = bitsPerSample;
 		this.numChannels = numChannels;
 		this.maxVol = (int) Math.pow(2, bitsPerSample - 1) - 1;
+		maxVol /= 2;
 	}
 
 	public byte[] format(double[][] music) {
@@ -35,7 +36,7 @@ public class MusicUtil {
 		return ret;
 	}
 
-	public double[][] add(double[][] mus1, double[][] mus2, double offsetSeconds) {
+	public double[][] add(double[][] mus1, double[][] mus2, double offsetSeconds, boolean noClick) {
 		int offsetFrames = (int) (offsetSeconds * sampleRate);
 		
 		if(mus1.length == 0 || mus1[0].length == 0) {
@@ -49,7 +50,7 @@ public class MusicUtil {
 			}
 		}
 
-		if (offsetSeconds > 0) {
+		if (noClick && offsetSeconds > 0) {
 			int noClickOffset;
 			for (noClickOffset = offsetFrames; noClickOffset > 0; noClickOffset--) {
 				boolean shouldBreak = false;
