@@ -96,6 +96,9 @@ public class ChordProgression extends ArrayList<Chord> {
 		
 		int[] notesInChord = new int[] {1, 3, 5};
 		
-		return new Chord(nthRootHz, tonic.getRootHz(), scaleNotes, notesInChord, true);
+		Chord ret = new Chord(nthRootHz, tonic.getRootHz(), scaleNotes, notesInChord, true);
+		ret.imposeChromatic(root.getChromatic());
+		
+		return ret;
 	}
 }

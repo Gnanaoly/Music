@@ -24,20 +24,19 @@ public class MusicGenerator {
 		 */
 		// return format(add(add(add(add(A, AtoC, 1), C, 3), CtoN, 4), N, 6));
 		double[][] music = new double[0][0];
+		double secsPerBeat = .5;
 		ChordProgression progression = new ChordProgression(200, Chord.ChordType.Major);
 		progression.generateProgression(4, 12, 1, 1);
-		progression.add(new Chord(200, Chord.ChordType.Major));
-		//for(int c = 0; c < progression.size(); c++) {
-		//	for(double hz : progression.get(c).getTriadHz()) {
-		//		music = util.add(music, toneGenerator.toneFlat(hz, .5, .01, .01, 100, type), .5 * c);
-		//	}
-		//}
-		music = addProgression(music, progression, 0);
+		music = addProgression(music, progression, 0, secsPerBeat);
+		Rhythm rhythm = new Rhythm(8);
+		rhythm.generateRhythm();
+		for(int i = 0; i < 12; i++) {
+			music = addRhythm(music, rhythm, i*2, secsPerBeat / 2);
+		}
 		return util.format(music);
 	}
 	
-	private double[][] addProgression(double[][] music, ChordProgression progression, double offsetSecs) {
-		double secsPerBeat = .5;
+	private double[][] addProgression(double[][] music, ChordProgression progression, double offsetSecs, double secsPerSlot) {
 		int beforeSwitch = 0;
 		double[][] add = new double[music.length][0];
 		for(int c = 1; c < progression.size(); c++) {
@@ -46,16 +45,36 @@ public class MusicGenerator {
 			} else {
 				for(double hz : progression.get(c-1).getTriadHz()) {
 					add = util.add(add,
-							toneGenerator.toneFlat(hz, secsPerBeat * (beforeSwitch + 1), .01, .01, 100, type),
-							secsPerBeat * (c - beforeSwitch - 1),
+							toneGenerator.toneFlat(hz, secsPerSlot * (beforeSwitch + 1), .01, .01, 100, type),
+							secsPerSlot * (c - beforeSwitch - 1),
 							false);
 				}
 				beforeSwitch = 0;
 			}
-			add = util.add(add,
-					toneGenerator.drumHit(100), 
-					secsPerBeat * c,
-					false);
+		}
+		return util.add(music, add, offsetSecs, false);
+	}
+	
+	private double[][] addRhythm(double[][] music, Rhythm rhythm, double offsetSecs, double secsPerSlot) {
+		double[][] add = new double[music.length][0];
+		for(int r = 0; r < rhythm.size(); r++) {
+			for(int drum = 0; drum < rhythm.get(r).size(); drum++) {
+				double[][] tone = new double[music.length][];
+				switch(rhythm.get(r).get(drum)) {
+				case snare:
+					tone = toneGenerator.snare(100);
+					break;
+				case hihat:
+					tone = toneGenerator.hihat(100);
+					break;
+				case kick:
+					tone = toneGenerator.drum(70, 300);
+					break;
+				default:
+					break;
+				}
+				add = util.add(add, tone, r * secsPerSlot, false);
+			}
 		}
 		return util.add(music, add, offsetSecs, false);
 	}

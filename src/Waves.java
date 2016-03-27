@@ -3,6 +3,7 @@ import java.util.Random;
 public class Waves {
 	
 	private int sampleRate;
+	private Random rand;
 	
 	public enum WaveType {
 		sin,
@@ -14,6 +15,7 @@ public class Waves {
 	public Waves(int sampleRate)
 	{
 		this.sampleRate = sampleRate;
+		rand = new Random();
 	}
 	
 	//Returns a value between -1 and 1, inclusive. Returns 0 for frame = 0.
@@ -64,9 +66,8 @@ public class Waves {
 		return -4+amp;
 	}
 	
-	public double drum(double hertz, double frame) {
-		Random random = new Random();
-		return random.nextDouble() * 2 - 1;
+	public double rand() {
+		return rand.nextDouble() * 2 - 1;
 	}
 	
 }

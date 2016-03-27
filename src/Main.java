@@ -1,7 +1,7 @@
 
 public class Main {
 
-	static final int sampleRate = 22050;
+	static final int sampleRate = 44100;
 	static final int bitsPerSample = 16;
 	static final int numChannels = 2;
 	static final String path = "/home/nathav63/Downloads/test.wav";

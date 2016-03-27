@@ -10,7 +10,7 @@ public class Chord {
 			5.0 / 3, 9.0 / 5, 15.0 / 8 };
 
 	public enum ChordType {
-		Major, Dom7, Minor, Dim, Alt
+		Major, Dom7, Minor, Dim, Alt;
 	}
 
 	public Chord(double rootHz, ChordType type) {
@@ -107,6 +107,10 @@ public class Chord {
 		return chromatic[scaleNotes[0]];
 	}
 	
+	public double[] getChromatic() {
+		return chromatic;
+	}
+	
 	public int[] getTriadNumbers() {
 		return chordNotes;
 	}
@@ -122,6 +126,22 @@ public class Chord {
 			ret[i] = notes[chordNotes[i]-1];
 		}
 		return ret;
+	}
+	
+	//Given the chromatic for the tonic, we should set the root as necessary and the rest accordingly
+	public void imposeChromatic(double[] chromatic) {
+		double root = this.chromatic[0];
+		int i;
+		for(i = 0; i < chromatic.length; i++) {
+			if((Math.abs(chromatic[i] - root) < .00001)) break;
+		}
+		int j = 0;
+		while(i < chromatic.length)
+			this.chromatic[j++] = chromatic[i++];
+		i = 0;
+		while(j < this.chromatic.length) {
+			this.chromatic[j++] = chromatic[i++];
+		}
 	}
 	
 	@Override

@@ -60,8 +60,32 @@ public class Tones {
 		return music;
 	}
 	
-	public double[][] drumHit(double volume) {
-		double hz = 300;
+	public double[][] snare(double volume) {
+		return snareHat(volume, .9997);
+	}
+	
+	public double[][] hihat(double volume) {
+		return snareHat(volume, .9990);
+	}
+	
+	private double[][] snareHat(double volume, double decay) {
+		double finalVolume = volume / 100;
+		//volume * decay^numFrames = finalVolume
+		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
+		double[][] hit = new double[numChannels][numFrames];
+		for(int frame = 0; frame < numFrames; frame++) {
+			for (int channel = 0; channel < numChannels; channel++) {
+				hit[channel][frame] = waveGenerator.rand() * volume;
+			}
+			volume *= decay;
+		}
+		return hit;
+	}
+	
+	//hz = 30 or 40 is great for kick
+	public double[][] drum(double hz, double volume) {
+		double hzStart = hz;
+		double hzEnd = hzStart / 2;
 		double decay = .9995;
 		double finalVolume = volume / 100;
 		//volume * decay^numFrames = finalVolume
@@ -69,7 +93,8 @@ public class Tones {
 		double[][] hit = new double[numChannels][numFrames];
 		for(int frame = 0; frame < numFrames; frame++) {
 			for (int channel = 0; channel < numChannels; channel++) {
-				hit[channel][frame] = waveGenerator.drum(hz, frame) * volume;
+				hit[channel][frame] = waveGenerator.sin(hzStart, frame) * volume * (1-frame / numFrames);
+				hit[channel][frame] += waveGenerator.sin(hzEnd, frame) * volume * (frame / numFrames);
 			}
 			volume *= decay;
 		}
