@@ -33,6 +33,9 @@ public class MusicGenerator {
 		for(int i = 0; i < 12; i++) {
 			music = addRhythm(music, rhythm, i*2, secsPerBeat / 2);
 		}
+		Melody melody = new Melody(progression, 1, 4);
+		melody.generateMelody();
+		music = addMelody(music, melody, 0, secsPerBeat);
 		return util.format(music);
 	}
 	
@@ -75,6 +78,35 @@ public class MusicGenerator {
 				}
 				add = util.add(add, tone, r * secsPerSlot, false);
 			}
+		}
+		return util.add(music, add, offsetSecs, false);
+	}
+	
+	private double[][] addMelody(double[][] music, Melody melody, double offsetSecs, double secsPerBeat) {
+		Waves.WaveType type = Waves.WaveType.saw;
+		double[][] add = new double[music.length][0];
+		int time = 0;
+		double secsPerTime = secsPerBeat / 4;
+		for(Melody.Note note : melody) {
+			if(note.hz == 0) {
+				
+			} else {
+				double[][] tone;
+				int volume = 100;
+				double noteTime = note.lengthSixteenths * secsPerTime;
+				if(note.accent) volume = 150;
+				if(note.bendFromPrev) {
+					tone = toneGenerator.toneBend(note.prevHz, note.hz, noteTime * .2,
+							.01, 0, volume, type);
+					double[][] tone2 = toneGenerator.toneFlat(note.hz, noteTime * .8,
+							0, .01, volume, type);
+					tone = util.add(tone, tone2, noteTime * .2, true);
+				} else {
+					tone = toneGenerator.toneFlat(note.hz, noteTime, .01, .01, volume, type);
+				}
+				add = util.add(add, tone, time * secsPerTime, false);
+			}
+			time += note.lengthSixteenths;
 		}
 		return util.add(music, add, offsetSecs, false);
 	}

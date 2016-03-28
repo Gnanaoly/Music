@@ -128,12 +128,20 @@ public class Chord {
 		return ret;
 	}
 	
+	public boolean inTriadHz(double hz) {
+		double[] triadHz = getTriadHz();
+		for(int i = 0; i < triadHz.length; i++) {
+			if(sameNote(triadHz[i], hz)) return true;
+		}
+		return false;
+	}
+	
 	//Given the chromatic for the tonic, we should set the root as necessary and the rest accordingly
 	public void imposeChromatic(double[] chromatic) {
 		double root = this.chromatic[0];
 		int i;
 		for(i = 0; i < chromatic.length; i++) {
-			if((Math.abs(chromatic[i] - root) < .00001)) break;
+			if(sameNote(chromatic[i], root)) break;
 		}
 		int j = 0;
 		while(i < chromatic.length)
@@ -158,6 +166,19 @@ public class Chord {
 			if(a1[i] != a2[i]) return false;
 		}
 		return true;
+	}
+	
+	private boolean sameNote(double a, double b) {
+		 if(a < b) {
+			 double tmp = a;
+			 a = b;
+			 b = tmp;
+		 }
+		 while(a >= b) {
+			 if (Math.abs(a - b) < .00001) return true;
+			 a /= 2;
+		 }
+		 return false;
 	}
 
 }
