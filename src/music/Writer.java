@@ -1,3 +1,4 @@
+package music;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -5,10 +6,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class Writer {
-	
-	public Writer()
-	{
-	}
 	
 	public void dumpToFile(String filename, byte[] data, int sampleRate, int bitsPerSample, int numChannels)
 	{

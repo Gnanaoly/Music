@@ -1,3 +1,4 @@
+package music;
 import java.util.ArrayList;
 
 @SuppressWarnings("serial")
@@ -18,9 +19,7 @@ public class ChordProgression extends ArrayList<Chord> {
 		/*for(int i = 1; i <= 8; i++) {
 			add(getNth(tonic, i));
 		}*/
-		for(int i = 0; i < beatsPerMeasure; i++) {
-			add(tonic);
-		}
+		add(tonic);
 		while(size() < beatsPerMeasure * (numMeasures - 1)) { //Save last measure to resolve
 			Chord prev = get(size()-1);
 			//Probability to move on is relChordRate / beatsPerMeasure.

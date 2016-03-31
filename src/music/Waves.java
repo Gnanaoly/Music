@@ -1,3 +1,4 @@
+package music;
 import java.util.Random;
 
 public class Waves {

@@ -1,9 +1,10 @@
+package music;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
 @SuppressWarnings("serial")
-public class Melody extends ArrayList<Melody.Note> {
+public class Melody extends ArrayList<Note> {
 	
 	private ChordProgression progression;
 	//TODO: take complexity and beatsPerMeasure into account
@@ -12,6 +13,7 @@ public class Melody extends ArrayList<Melody.Note> {
 	RandomUtil rand;
 	
 	private final double chanceRest = .25;
+	private final double chanceAccent = .25;
 	
 	//Complexity ranges 0 to 1
 	public Melody(ChordProgression progression, double complexity, int beatsPerMeasure) {
@@ -23,6 +25,7 @@ public class Melody extends ArrayList<Melody.Note> {
 	
 	public void generateMelody() {
 		//Each chord in ChordProgression is a quarter note
+		clear();
 		double[] scaleNotes = progression.get(0).getScaleNoteHz();
 		double prevHz = scaleNotes[0];
 		for(int i = 0; i < progression.size(); i++) {
@@ -35,7 +38,8 @@ public class Melody extends ArrayList<Melody.Note> {
 				if(rand.nextDouble() < chanceRest) {
 					add(new Note(noteTime, 0, false, false, prevHz));
 				} else {
-					Note note = new Note(noteTime, scaleNotes[rand.nextSkewed(scaleNotes.length, .1)], rand.nextBoolean(), rand.nextBoolean(), prevHz);
+					Note note = new Note(noteTime, scaleNotes[rand.nextSkewed(scaleNotes.length, -.1)],
+							rand.nextBoolean(), rand.nextDouble() < chanceAccent, prevHz);
 					prevHz = note.hz;
 					add(note);
 				}
@@ -73,23 +77,5 @@ public class Melody extends ArrayList<Melody.Note> {
 			ret[p++] = d;
 		}
 		return ret;
-	}
-	
-	public class Note {
-		
-		public int lengthSixteenths;
-		public double hz; //If hz is 0, this is a rest
-		public boolean bendFromPrev;
-		public boolean accent;
-		public double prevHz;
-		
-		public Note(int lengthSixteenths, double hz, boolean bendFromPrev, boolean accent, double prevHz) {
-			this.lengthSixteenths = lengthSixteenths;
-			this.hz = hz;
-			this.bendFromPrev = bendFromPrev;
-			this.accent = accent;
-			this.prevHz = prevHz;
-		}
-		
 	}
 }
