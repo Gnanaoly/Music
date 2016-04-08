@@ -1,6 +1,12 @@
 package music;
 import java.util.ArrayList;
 
+import instrument.Bass;
+import instrument.ChordProgression;
+import instrument.Melody;
+import instrument.Note;
+import instrument.Rhythm;
+
 public class MusicGenerator {
 
 	private Tones toneGenerator;
@@ -13,57 +19,29 @@ public class MusicGenerator {
 		util = new MusicUtil(sampleRate, bitsPerSample, numChannels);
 	}
 
-	public byte[] getMusic() {
-		double secsPerBeat = .5;
-		int measuresPerSection = 8;
-		ChordProgression progression = new ChordProgression(200, Chord.ChordType.Major);
-		progression.generateProgression(4, measuresPerSection, 1, 1);
-		
-		Rhythm rhythm = new Rhythm();
-		rhythm.generateRhythm(measuresPerSection);
-		rhythm.fill(rhythm.size() - 8, rhythm.size());
-		
-		Melody melody = new Melody(progression, 1, 4);
-		melody.generateMelody();
-		
-		Bass bass = new Bass(progression, melody, rhythm);
-		bass.generateBass();
-		double[][] music = makeChorus(progression, rhythm, melody, bass, secsPerBeat);
-		
-		bass.generateBass();
-		double[][] music2 = makeChorus(progression, rhythm, melody, bass, secsPerBeat);
-		music = util.add(music, music2, secsPerBeat * 4 * measuresPerSection, false);
-		
-		bass.generateBass();
-		music2 = makeChorus(progression, rhythm, melody, bass, secsPerBeat);
-		
-		progression = new ChordProgression(200, Chord.ChordType.Major);
-		progression.generateProgression(4, measuresPerSection, 1, 1);
-		melody = new Melody(progression, 1, 4);
-		melody.generateMelody();
-		rhythm.generateRhythm(measuresPerSection);
-		rhythm.fill(rhythm.size() - 8, rhythm.size());
-		bass = new Bass(progression, melody, rhythm);
-		bass.generateBass();
-		double[][] music3 = makeChorus(progression, rhythm, melody, bass, secsPerBeat);
-		music = util.add(music, music3, secsPerBeat * 4 * measuresPerSection * 2, false);
-		
-		music = util.add(music, music2, secsPerBeat * 4 * measuresPerSection * 3, false);
-		
+	public byte[] getMusic(Composer.Section sections[]) {
+		double[][] music = null;
+		double t = 0;
+		for(int i = 0; i < sections.length; i++) {
+			music = util.add(music,
+					makeChorus(sections[i].progression, sections[i].rhythm, sections[i].melody, sections[i].bass, sections[i].time), 
+					t, false);
+			t += sections[i].time.secondsPerBeat * sections[i].time.beatsPerMeasure * sections[i].time.numMeasures;
+		}
 		return util.format(music);
 	}
 	
 	private double[][] makeChorus(ChordProgression progression, Rhythm rhythm,
-			Melody melody, Bass bass, double secsPerBeat) {
+			Melody melody, Bass bass, Time time) {
 		double[][] ret = new double[numChannels][0];
-		ret = addProgression(ret, progression, 0, secsPerBeat);
-		ret = addRhythm(ret, rhythm, 0, secsPerBeat / 4);
-		ret = addNotes(ret, melody, 0, secsPerBeat, Waves.WaveType.saw, 100);
-		ret = addNotes(ret, bass, 0, secsPerBeat, Waves.WaveType.triangle, 200);
+		ret = addProgression(ret, progression, 0, time);
+		ret = addRhythm(ret, rhythm, 0, time);
+		ret = addNotes(ret, melody, 0, time, Waves.WaveType.saw, 100);
+		ret = addNotes(ret, bass, 0, time, Waves.WaveType.triangle, 200);
 		return ret;
 	}
 	
-	private double[][] addProgression(double[][] music, ChordProgression progression, double offsetSecs, double secsPerSlot) {
+	private double[][] addProgression(double[][] music, ChordProgression progression, double offsetSecs, Time time) {
 		int beforeSwitch = 0;
 		double[][] add = new double[numChannels][0];
 		for(int c = 1; c < progression.size(); c++) {
@@ -72,8 +50,8 @@ public class MusicGenerator {
 			} else {
 				for(double hz : progression.get(c-1).getTriadHz()) {
 					add = util.add(add,
-							toneGenerator.toneFlat(hz, secsPerSlot * (beforeSwitch + 1), .01, .01, 100, type),
-							secsPerSlot * (c - beforeSwitch - 1),
+							toneGenerator.toneFlat(hz, time.secondsPerBeat * (beforeSwitch + 1), .01, .01, 100, type),
+							time.secondsPerBeat * (c - beforeSwitch - 1),
 							false);
 				}
 				beforeSwitch = 0;
@@ -82,7 +60,7 @@ public class MusicGenerator {
 		return util.add(music, add, offsetSecs, false);
 	}
 	
-	private double[][] addRhythm(double[][] music, Rhythm rhythm, double offsetSecs, double secsPerSlot) {
+	private double[][] addRhythm(double[][] music, Rhythm rhythm, double offsetSecs, Time time) {
 		double[][] add = new double[numChannels][0];
 		for(int r = 0; r < rhythm.size(); r++) {
 			for(int drum = 0; drum < rhythm.get(r).size(); drum++) {
@@ -107,23 +85,22 @@ public class MusicGenerator {
 					tone = new double[numChannels][0];
 					break;
 				}
-				add = util.add(add, tone, r * secsPerSlot, false);
+				add = util.add(add, tone, r * time.secondsPerSubdivide(), false);
 			}
 		}
 		return util.add(music, add, offsetSecs, false);
 	}
 	
 	private double[][] addNotes(double[][] music, ArrayList<Note> notes,
-			double offsetSecs, double secsPerBeat, Waves.WaveType type, int volume) {
+			double offsetSecs, Time time, Waves.WaveType type, int volume) {
 		double[][] add = new double[numChannels][0];
-		int time = 0;
-		double secsPerTime = secsPerBeat / 4;
+		int t = 0;
 		for(Note note : notes) {
 			if(note.hz == 0) {
 				
 			} else {
 				double[][] tone;
-				double noteTime = note.lengthSixteenths * secsPerTime;
+				double noteTime = note.lengthSubdivides * time.secondsPerSubdivide();
 				int vol = volume;
 				if(note.accent) vol *= 1.2;
 				if(note.bendFromPrev) {
@@ -135,9 +112,9 @@ public class MusicGenerator {
 				} else {
 					tone = toneGenerator.toneFlat(note.hz, noteTime, .01, .01, vol, type);
 				}
-				add = util.add(add, tone, time * secsPerTime, false);
+				add = util.add(add, tone, t * time.secondsPerSubdivide(), false);
 			}
-			time += note.lengthSixteenths;
+			t += note.lengthSubdivides;
 		}
 		return util.add(music, add, offsetSecs, false);
 	}

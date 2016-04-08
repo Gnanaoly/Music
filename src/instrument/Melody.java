@@ -1,47 +1,43 @@
-package music;
+package instrument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import music.RandomUtil;
+import music.Time;
+
 @SuppressWarnings("serial")
 public class Melody extends ArrayList<Note> {
 	
-	private ChordProgression progression;
-	//TODO: take complexity and beatsPerMeasure into account
-	private double complexity;
-	private int beatsPerMeasure;
 	RandomUtil rand;
 	
-	private final double chanceRest = .25;
 	private final double chanceAccent = .25;
 	
 	//Complexity ranges 0 to 1
-	public Melody(ChordProgression progression, double complexity, int beatsPerMeasure) {
-		this.progression = progression;
-		this.complexity = complexity;
-		this.beatsPerMeasure = beatsPerMeasure;
+	public Melody(Time time, ChordProgression progression, double complexity) {
 		rand = new RandomUtil();
+		generateMelody(time, progression, complexity);
 	}
 	
-	public void generateMelody() {
-		//Each chord in ChordProgression is a quarter note
+	//complexity between 0 and 1
+	private void generateMelody(Time time, ChordProgression progression, double complexity) {
 		clear();
 		double[] scaleNotes = progression.get(0).getScaleNoteHz();
 		double prevHz = scaleNotes[0];
 		for(int i = 0; i < progression.size(); i++) {
 			double[] triad = progression.get(i).getTriadHz();
-			int time = 0;
-			while(time < 4) {
+			int t = 0;
+			while(t < time.subdividesPerBeat()) {
 				scaleNotes = sortScaleNotes(scaleNotes, triad, prevHz);
-				int noteTime = rand.nextInt(4 - time) + 1;
-				time += noteTime;
-				if(rand.nextDouble() < chanceRest) {
-					add(new Note(noteTime, 0, false, false, prevHz));
-				} else {
+				int noteTime = rand.nextInt(time.subdividesPerBeat() - t) + 1;
+				t += noteTime;
+				if(rand.nextDouble() < complexity) {
 					Note note = new Note(noteTime, scaleNotes[rand.nextSkewed(scaleNotes.length, -.1)],
 							rand.nextBoolean(), rand.nextDouble() < chanceAccent, prevHz);
 					prevHz = note.hz;
 					add(note);
+				} else {
+					add(new Note(noteTime, 0, false, false, prevHz));
 				}
 			}
 		}

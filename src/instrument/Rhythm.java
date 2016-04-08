@@ -1,32 +1,35 @@
-package music;
+package instrument;
 import java.util.ArrayList;
+
+import music.RandomUtil;
+import music.Time;
 
 @SuppressWarnings("serial")
 public class Rhythm extends ArrayList<ArrayList<Rhythm.Drum>>{
 	
-	public final int slotsPerMeasure = 16;
 	RandomUtil rand;
 	
 	public enum Drum {
 		snare, hihat, kick, tom1, tom2, cymbal;
 	}
 
-	public Rhythm() {
+	public Rhythm(Time time) {
 		rand = new RandomUtil();
+		generateRhythm(time);
 	}
 	
-	public void generateRhythm(int numMeasures) {
+	private void generateRhythm(Time time) {
 		clear();
-		for(int i = 0; i < slotsPerMeasure; i++) {
+		for(int i = 0; i < time.subdivide; i++) {
 			add(new ArrayList<Rhythm.Drum>());
 		}
-		drumSteady(Drum.kick, rand.nextInt(3) + 2, rand.nextInt(2));
-		drumSteady(Drum.snare, rand.nextInt(6) + 2, rand.nextInt(2));
-		drumSteady(Drum.hihat, rand.nextInt(8) + 2, rand.nextInt(2));
-		expand(numMeasures);
+		drumSteady(Drum.kick, rand.nextInt(3) + 2, rand.nextInt(2), time);
+		drumSteady(Drum.snare, rand.nextInt(6) + 2, rand.nextInt(2), time);
+		drumSteady(Drum.hihat, rand.nextInt(8) + 2, rand.nextInt(2), time);
+		expand(time.numMeasures);
 	}
 	
-	//endIndex is not inclusive
+	//end is not inclusive
 	public void fill(int start, int end) {
 		for(int i = start; i < end; i++) {
 			get(i).clear();
@@ -34,6 +37,10 @@ public class Rhythm extends ArrayList<ArrayList<Rhythm.Drum>>{
 				if(rand.nextBoolean()) get(i).add(drum);
 			}
 		}
+	}
+	
+	public void fillEnd() {
+		fill(size()-3, size());
 	}
 	
 	private void expand(int times) {
@@ -48,8 +55,8 @@ public class Rhythm extends ArrayList<ArrayList<Rhythm.Drum>>{
 		}
 	}
 	
-	private void drumSteady(Drum drum, int freq, int start) {
-		int spaceBetween = slotsPerMeasure / freq;
+	private void drumSteady(Drum drum, int freq, int start, Time time) {
+		int spaceBetween = time.subdivide / freq;
 		for(int i = start; i < size(); i += spaceBetween)
 			get(i).add(drum);
 	}

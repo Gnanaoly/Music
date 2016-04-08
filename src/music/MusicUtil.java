@@ -40,7 +40,7 @@ public class MusicUtil {
 	public double[][] add(double[][] mus1, double[][] mus2, double offsetSeconds, boolean noClick) {
 		int offsetFrames = (int) (offsetSeconds * sampleRate);
 		
-		if(mus1.length == 0 || mus1[0].length == 0) {
+		if(mus1 == null || mus1.length == 0 || mus1[0].length == 0) {
 			mus1 = new double[numChannels][0];
 		}
 		

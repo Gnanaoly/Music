@@ -39,5 +39,14 @@ public class RandomUtil extends Random{
 		}
 		return num;
 	}
+	
+	public int nextEven(int low, int high) {
+		if(low % 2 == 1) low++;
+		if(high % 2 == 1) high--;
+		int ret = nextInt((high - low) / 2);
+		ret *= 2;
+		ret += low;
+		return ret;
+	}
 
 }

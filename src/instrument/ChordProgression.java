@@ -1,5 +1,9 @@
-package music;
+package instrument;
 import java.util.ArrayList;
+
+import music.Chord;
+import music.RandomUtil;
+import music.Time;
 
 @SuppressWarnings("serial")
 public class ChordProgression extends ArrayList<Chord> {
@@ -7,24 +11,25 @@ public class ChordProgression extends ArrayList<Chord> {
 	private Chord tonic;
 	private RandomUtil rand;
 
-	public ChordProgression(double tonic, Chord.ChordType type) {
+	public ChordProgression(Time time, Chord tonic, double relChordRate, int leadTo) {
 		super();
-		this.tonic = new Chord(tonic, type);
+		this.tonic = tonic;
 		this.rand = new RandomUtil();
+		generateProgression(time, relChordRate, leadTo);
 	}
 	
 	//Shoot for relChordRate chords per measure
-	public void generateProgression(int beatsPerMeasure, int numMeasures, double relChordRate, int leadTo) {
+	private void generateProgression(Time time, double relChordRate, int leadTo) {
 		clear();
 		/*for(int i = 1; i <= 8; i++) {
 			add(getNth(tonic, i));
 		}*/
 		add(tonic);
-		while(size() < beatsPerMeasure * (numMeasures - 1)) { //Save last measure to resolve
+		while(size() < time.beatsPerMeasure * (time.numMeasures - 1)) { //Save last measure to resolve
 			Chord prev = get(size()-1);
 			//Probability to move on is relChordRate / beatsPerMeasure.
-			double probToSwitch = relChordRate / beatsPerMeasure;
-			if(size() % beatsPerMeasure == 0 || size() % beatsPerMeasure / 2 == 0)
+			double probToSwitch = relChordRate / time.beatsPerMeasure;
+			if(size() % time.beatsPerMeasure == 0 || size() % time.beatsPerMeasure / 2 == 0)
 				probToSwitch *= 1.5;
 			else 
 				probToSwitch *= .5;
@@ -37,14 +42,14 @@ public class ChordProgression extends ArrayList<Chord> {
 			}
 		}
 		//We have a measure to set up the leadTo chord
-		if(beatsPerMeasure < 4 || relChordRate < 1) {
+		if(time.beatsPerMeasure < 4 || relChordRate < 1) {
 			Chord[] options = new Chord[] {getNth(tonic, leadTo+4), getNth(tonic, leadTo+6)};
 			Chord chord = options[rand.nextSkewed(options.length, 0)];
-			for(int i = 0; i < beatsPerMeasure; i++) {
+			for(int i = 0; i < time.beatsPerMeasure; i++) {
 				add(chord);
 			}
 		} else {
-			for(int i = 0; i < beatsPerMeasure-2; i++) {
+			for(int i = 0; i < time.beatsPerMeasure-2; i++) {
 				add(getNth(tonic, leadTo));
 			}
 			//Put in 2,5
