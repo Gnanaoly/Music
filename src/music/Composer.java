@@ -33,14 +33,14 @@ public class Composer {
 				}
 			}
 			if(sections[i] == null) {
-				int measuresPerSection = rand.nextEven(8, 24);
+				int measuresInSection = rand.nextEven(8, 16);
 				int beatsPerMeasure = rand.nextInt(7) + 3;
 				int subdivide = beatsPerMeasure * (rand.nextInt(3) + 3);
 				double spb = secondsPerBeat;
 				if(rand.nextDouble() < chanceToChangeTime) {
 					spb = rand.nextDouble() + .2;
 				}
-				Time time = new Time(spb, beatsPerMeasure, subdivide, measuresPerSection);
+				Time time = new Time(spb, beatsPerMeasure, subdivide, measuresInSection);
 				
 				sections[i] = new Section(id);
 				sections[i].time = time;

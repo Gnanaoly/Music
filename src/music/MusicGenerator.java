@@ -29,7 +29,7 @@ public class MusicGenerator {
 					secs[num] = makeChorus(sections[num].progression, sections[num].rhythm, sections[num].melody, sections[num].bass, sections[num].time);
 				}
 			};
-			threads[i].run();
+			threads[i].start();
 		}
 		for(int i = 0; i < threads.length; i++) {
 			try {
