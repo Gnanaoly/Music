@@ -22,7 +22,7 @@ public class Melody extends ArrayList<Note> {
 	//complexity between 0 and 1
 	private void generateMelody(Time time, ChordProgression progression, double complexity) {
 		clear();
-		double[] scaleNotes = progression.get(0).getScaleNoteHz();
+		double[] scaleNotes = putInRange(progression.get(0).getScaleNoteHz());
 		double prevHz = scaleNotes[0];
 		for(int i = 0; i < progression.size(); i++) {
 			double[] triad = progression.get(i).getTriadHz();
@@ -73,5 +73,19 @@ public class Melody extends ArrayList<Note> {
 			ret[p++] = d;
 		}
 		return ret;
+	}
+	
+	private final int melodyHz = 200;
+	
+	private double[] putInRange(double[] in) {
+		for(int i = 0; i < in.length; i++) {
+			while(in[i] > melodyHz * 2) {
+				in[i] /= 2;
+			}
+			while(in[i] < melodyHz && in[i] > 0) {
+				in[i] *= 2;
+			}
+		}
+		return in;
 	}
 }

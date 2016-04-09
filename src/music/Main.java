@@ -11,10 +11,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		System.out.println(Phoneme.toPhoneme("Hello world!"));
+		//Lyrics.doStuff();
 		Writer writer = new Writer();
 		MusicGenerator generator = new MusicGenerator(sampleRate, bitsPerSample, numChannels);
 		Composer composer = new Composer(generator);
 		writer.dumpToFile(path, composer.compose(), sampleRate, bitsPerSample, numChannels);
+		
 		System.out.println("All done!");
 	}
 

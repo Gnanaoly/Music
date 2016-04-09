@@ -1,5 +1,7 @@
 package music;
 
+import java.util.ArrayList;
+
 public class Tones {
 
 	private int sampleRate;
@@ -18,12 +20,12 @@ public class Tones {
 		return change / (time * sampleRate);
 	}
 
-	public double[][] toneFlat(double hz, double duration, double buildIn, double buildOut, double volume,
+	public ArrayList<double[]> toneFlat(double hz, double duration, double buildIn, double buildOut, double volume,
 			Waves.WaveType type) {
 		return toneBend(hz, hz, duration, buildIn, buildOut, volume, type);
 	}
 
-	public double[][] toneBend(double hzStart, double hzEnd, double duration, double buildIn, double buildOut,
+	public ArrayList<double[]> toneBend(double hzStart, double hzEnd, double duration, double buildIn, double buildOut,
 			double volume, Waves.WaveType type) {
 		int numFrames = (int) (sampleRate * duration);
 
@@ -37,46 +39,49 @@ public class Tones {
 		double bendRate = getRate(duration, hzEnd - hzStart) / 2;
 		double hz = hzStart;
 
-		double[][] music = new double[numChannels][numFrames];
+		ArrayList<double[]> music = new ArrayList<double[]>(numFrames);
+		
 		for (int frame = 0; frame < numFrames; frame++) {
 			if (frame >= buildOutStart)
 				vol -= buildOutRate;
 			else if (vol < volume)
 				vol += buildInRate;
 			hz += bendRate;
+			music.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				music[channel][frame] = waveGenerator.getWave(hz, frame, type) * vol;
+				music.get(frame)[channel] = waveGenerator.getWave(hz, frame, type) * vol;
 			}
 		}
 
 		// Remove final partial wave so that we don't click
-		for (int frame = music[0].length - 1; frame > 0; frame--) {
-			double val = music[0][frame];
+		for (int frame = music.size() - 1; frame > 0; frame--) {
+			double val = music.get(frame)[0];
 			for (int channel = 0; channel < numChannels; channel++) {
-				music[channel][frame] = 0;
+				music.get(frame)[channel] = 0;
 			}
-			if (val > 0 && music[0][frame - 1] <= 0)
+			if (val > 0 && music.get(frame - 1)[0] <= 0)
 				break;
 		}
 		return music;
 	}
 	
-	public double[][] snare(double volume) {
+	public ArrayList<double[]> snare(double volume) {
 		return snareHat(volume, .9997);
 	}
 	
-	public double[][] hihat(double volume) {
+	public ArrayList<double[]> hihat(double volume) {
 		return snareHat(volume, .9990);
 	}
 	
-	private double[][] snareHat(double volume, double decay) {
+	private ArrayList<double[]> snareHat(double volume, double decay) {
 		double finalVolume = volume / 100;
 		//volume * decay^numFrames = finalVolume
 		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
-		double[][] hit = new double[numChannels][numFrames];
+		ArrayList<double[]> hit = new ArrayList<double[]>(numFrames);
 		for(int frame = 0; frame < numFrames; frame++) {
+			hit.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				hit[channel][frame] = waveGenerator.rand() * volume;
+				hit.get(frame)[channel] = waveGenerator.rand() * volume;
 			}
 			volume *= decay;
 		}
@@ -84,18 +89,19 @@ public class Tones {
 	}
 	
 	//hz = 30 or 40 is great for kick
-	public double[][] drum(double hz, double volume) {
+	public ArrayList<double[]> drum(double hz, double volume) {
 		double hzStart = hz;
 		double hzEnd = hzStart / 2;
 		double decay = .9995;
 		double finalVolume = volume / 100;
 		//volume * decay^numFrames = finalVolume
 		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
-		double[][] hit = new double[numChannels][numFrames];
+		ArrayList<double[]> hit = new ArrayList<double[]>(numFrames);
 		for(int frame = 0; frame < numFrames; frame++) {
+			hit.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				hit[channel][frame] = waveGenerator.sin(hzStart, frame) * volume * (1-frame / numFrames);
-				hit[channel][frame] += waveGenerator.sin(hzEnd, frame) * volume * (frame / numFrames);
+				hit.get(frame)[channel] = waveGenerator.sin(hzStart, frame) * volume * (1-frame / numFrames);
+				hit.get(frame)[channel] += waveGenerator.sin(hzEnd, frame) * volume * (frame / numFrames);
 			}
 			volume *= decay;
 		}

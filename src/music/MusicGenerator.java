@@ -12,44 +12,63 @@ public class MusicGenerator {
 	private Tones toneGenerator;
 	private MusicUtil util;
 	private Waves.WaveType type = Waves.WaveType.sin;
-	private int numChannels = 2;
 
 	public MusicGenerator(int sampleRate, int bitsPerSample, int numChannels) {
 		toneGenerator = new Tones(sampleRate, numChannels);
 		util = new MusicUtil(sampleRate, bitsPerSample, numChannels);
 	}
 
-	public byte[] getMusic(Composer.Section sections[]) {
-		double[][] music = null;
+	public byte[] getMusic(final Composer.Section sections[]) {
+		@SuppressWarnings("unchecked")
+		final ArrayList<double[]>[] secs = (ArrayList<double[]>[])new ArrayList[sections.length];
+		Thread[] threads = new Thread[sections.length];
+		for(int i = 0; i < sections.length; i++) {
+			final int num = i;
+			threads[i] = new Thread(){
+				public void run() {
+					secs[num] = makeChorus(sections[num].progression, sections[num].rhythm, sections[num].melody, sections[num].bass, sections[num].time);
+				}
+			};
+			threads[i].run();
+		}
+		for(int i = 0; i < threads.length; i++) {
+			try {
+				threads[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("Done doing parallel stuff");
+		
+		ArrayList<double[]> music = new ArrayList<double[]>();
 		double t = 0;
 		for(int i = 0; i < sections.length; i++) {
-			music = util.add(music,
-					makeChorus(sections[i].progression, sections[i].rhythm, sections[i].melody, sections[i].bass, sections[i].time), 
-					t, false);
+			util.add(music, secs[i], t, false);
 			t += sections[i].time.secondsPerBeat * sections[i].time.beatsPerMeasure * sections[i].time.numMeasures;
 		}
 		return util.format(music);
 	}
 	
-	private double[][] makeChorus(ChordProgression progression, Rhythm rhythm,
+	private ArrayList<double[]> makeChorus(ChordProgression progression, Rhythm rhythm,
 			Melody melody, Bass bass, Time time) {
-		double[][] ret = new double[numChannels][0];
-		ret = addProgression(ret, progression, 0, time);
-		ret = addRhythm(ret, rhythm, 0, time);
-		ret = addNotes(ret, melody, 0, time, Waves.WaveType.saw, 100);
-		ret = addNotes(ret, bass, 0, time, Waves.WaveType.triangle, 200);
+		ArrayList<double[]> ret = new ArrayList<double[]>();
+		addProgression(ret, progression, 0, time);
+		addRhythm(ret, rhythm, 0, time);
+		addNotes(ret, melody, 0, time, Waves.WaveType.saw, 100);
+		addNotes(ret, bass, 0, time, Waves.WaveType.triangle, 200);
 		return ret;
 	}
 	
-	private double[][] addProgression(double[][] music, ChordProgression progression, double offsetSecs, Time time) {
+	private void addProgression(ArrayList<double[]> music, ChordProgression progression, double offsetSecs, Time time) {
 		int beforeSwitch = 0;
-		double[][] add = new double[numChannels][0];
+		ArrayList<double[]> add = new ArrayList<double[]>();
 		for(int c = 1; c < progression.size(); c++) {
-			if(progression.get(c).equals(progression.get(c-1))) {
+			if(c != progression.size()-1 && progression.get(c).equals(progression.get(c-1))) {
 				beforeSwitch++;
 			} else {
 				for(double hz : progression.get(c-1).getTriadHz()) {
-					add = util.add(add,
+					util.add(add,
 							toneGenerator.toneFlat(hz, time.secondsPerBeat * (beforeSwitch + 1), .01, .01, 100, type),
 							time.secondsPerBeat * (c - beforeSwitch - 1),
 							false);
@@ -57,14 +76,14 @@ public class MusicGenerator {
 				beforeSwitch = 0;
 			}
 		}
-		return util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs, false);
 	}
 	
-	private double[][] addRhythm(double[][] music, Rhythm rhythm, double offsetSecs, Time time) {
-		double[][] add = new double[numChannels][0];
+	private void addRhythm(ArrayList<double[]> music, Rhythm rhythm, double offsetSecs, Time time) {
+		ArrayList<double[]> add = new ArrayList<double[]>();
 		for(int r = 0; r < rhythm.size(); r++) {
 			for(int drum = 0; drum < rhythm.get(r).size(); drum++) {
-				double[][] tone = new double[numChannels][];
+				ArrayList<double[]> tone;
 				switch(rhythm.get(r).get(drum)) {
 				case snare:
 					tone = toneGenerator.snare(100);
@@ -82,41 +101,40 @@ public class MusicGenerator {
 					tone = toneGenerator.drum(150, 400);
 					break;
 				default:
-					tone = new double[numChannels][0];
+					tone = new ArrayList<double[]>();
 					break;
 				}
-				add = util.add(add, tone, r * time.secondsPerSubdivide(), false);
+				util.add(add, tone, r * time.secondsPerSubdivide(), false);
 			}
 		}
-		return util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs, false);
 	}
 	
-	private double[][] addNotes(double[][] music, ArrayList<Note> notes,
+	private void addNotes(ArrayList<double[]> music, ArrayList<Note> notes,
 			double offsetSecs, Time time, Waves.WaveType type, int volume) {
-		double[][] add = new double[numChannels][0];
+		ArrayList<double[]> add = new ArrayList<double[]>();
 		int t = 0;
 		for(Note note : notes) {
 			if(note.hz == 0) {
 				
 			} else {
-				double[][] tone;
+				ArrayList<double[]> tone;
 				double noteTime = note.lengthSubdivides * time.secondsPerSubdivide();
 				int vol = volume;
 				if(note.accent) vol *= 1.2;
 				if(note.bendFromPrev) {
 					tone = toneGenerator.toneBend(note.prevHz, note.hz, noteTime * .2,
 							.01, 0, vol, type);
-					double[][] tone2 = toneGenerator.toneFlat(note.hz, noteTime * .8,
-							0, .01, vol, type);
-					tone = util.add(tone, tone2, noteTime * .2, true);
+					util.add(tone, toneGenerator.toneFlat(note.hz, noteTime * .8,
+							0, .01, vol, type), noteTime * .2, true);
 				} else {
 					tone = toneGenerator.toneFlat(note.hz, noteTime, .01, .01, vol, type);
 				}
-				add = util.add(add, tone, t * time.secondsPerSubdivide(), false);
+				util.add(add, tone, t * time.secondsPerSubdivide(), false);
 			}
 			t += note.lengthSubdivides;
 		}
-		return util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs, false);
 	}
 
 }
