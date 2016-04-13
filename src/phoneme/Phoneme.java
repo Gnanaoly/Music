@@ -22,7 +22,7 @@ Adapted for music by Nathan Vance, nathav63@gmail.com
 **
 **      Procedure:
 **
-**              Seperate each block of letters (apostrophes included) 
+**              Separate each block of letters (apostrophes included) 
 **              and add a space on each side.  For each unmatched 
 **              letter in the word, look through the English.rules where the 
 **              text to match starts with the letter in the word.  If 

@@ -1,22 +1,44 @@
 package music;
 import java.util.Random;
 
+import phoneme.PhonWaves;
+
 public class Waves {
 	
 	private int sampleRate;
 	private Random rand;
+	private PhonWaves phonWaves;
 	
 	public enum WaveType {
 		sin,
 		square,
 		saw,
-		triangle;
+		triangle,
+		iy,
+		ih,
+		ey,
+		eh,
+		ae,
+		aa,
+		ao,
+		ow,
+		uh,
+		uw,
+		er,
+		ax,
+		ah,
+		ay,
+		aw1,
+		aw2,
+		oy1,
+		oy2
 	}
 
 	public Waves(int sampleRate)
 	{
 		this.sampleRate = sampleRate;
 		rand = new Random();
+		this.phonWaves = new PhonWaves(sampleRate);
 	}
 	
 	//Returns a value between -1 and 1, inclusive. Returns 0 for frame = 0.
@@ -28,6 +50,25 @@ public class Waves {
 		case square: return square(hertz, frame);
 		case saw: return saw(hertz, frame);
 		case triangle: return triangle(hertz, frame);
+		case iy: return phonWaves.iy(hertz, frame);
+		case ih: return phonWaves.ih(hertz, frame);
+		case ey: return phonWaves.ey(hertz, frame);
+		case eh: return phonWaves.eh(hertz, frame);
+		case ae: return phonWaves.ae(hertz, frame);
+		case aa: return phonWaves.aa(hertz, frame);
+		case ao: return phonWaves.ao(hertz, frame);
+		case ow: return phonWaves.ow(hertz, frame);
+		case uh: return phonWaves.uh(hertz, frame);
+		case uw: return phonWaves.uw(hertz, frame);
+		case er: return phonWaves.er(hertz, frame);
+		case ax: return phonWaves.ax(hertz, frame);
+		case ah: return phonWaves.ah(hertz, frame);
+		case ay: return phonWaves.ay(hertz, frame);
+		case aw1: return phonWaves.aw1(hertz, frame);
+		case aw2: return phonWaves.aw2(hertz, frame);
+		case oy1: return phonWaves.oy1(hertz, frame);
+		case oy2: return phonWaves.oy2(hertz, frame);
+
 		default: return sin(hertz, frame);
 		}
 	}

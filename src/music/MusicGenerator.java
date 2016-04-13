@@ -136,5 +136,9 @@ public class MusicGenerator {
 		}
 		util.add(music, add, offsetSecs, false);
 	}
+	
+	public byte[] test() {
+		return util.format(toneGenerator.toneFlat(200, 2, 0, 0, 100, Waves.WaveType.oy2));
+	}
 
 }

@@ -115,9 +115,9 @@ public class English {
 	static String AX = "\u0259";
 	static String AH = "\u028C";
 	static String AY = "\u0251\u026A";
-	static String AW = "\u0251\u028A";
+	static String AW = "\u0251\u028A"; //bough, takes two sounds
 
-	static String OY = "\u0254\u026A";
+	static String OY = "\u0254\u026A"; //boy, takes two sounds
 	static String p = "\u0070";
 	static String b = "\u0062";
 	static String t = "\u0074";
