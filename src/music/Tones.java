@@ -20,19 +20,20 @@ public class Tones {
 		return change / (time * sampleRate);
 	}
 
-	public ArrayList<double[]> toneFlat(double hz, double duration, double buildIn, double buildOut, double volume,
+	public ArrayList<double[]> toneFlat(double hz, double duration, double buildIn, double buildOut, double[] volume,
 			Waves.WaveType type) {
 		return toneBend(hz, hz, duration, buildIn, buildOut, volume, type);
 	}
 
 	public ArrayList<double[]> toneBend(double hzStart, double hzEnd, double duration, double buildIn, double buildOut,
-			double volume, Waves.WaveType type) {
+			double[] volume, Waves.WaveType type) {
 		int numFrames = (int) (sampleRate * duration);
+		double masterVol = 1;
 
-		double buildInRate = getRate(buildIn, volume);
-		double buildOutRate = getRate(buildOut, volume);
+		double buildInRate = getRate(buildIn, masterVol);
+		double buildOutRate = getRate(buildOut, masterVol);
 		double vol = 0;
-		int buildOutStart = (int) (numFrames - volume / buildOutRate);
+		int buildOutStart = (int) (numFrames - masterVol / buildOutRate);
 
 		// We have to cut bendRate in half because the waves being compressed
 		// doubles the effect.
@@ -44,12 +45,12 @@ public class Tones {
 		for (int frame = 0; frame < numFrames; frame++) {
 			if (frame >= buildOutStart)
 				vol -= buildOutRate;
-			else if (vol < volume)
+			else if (vol < masterVol)
 				vol += buildInRate;
 			hz += bendRate;
 			music.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				music.get(frame)[channel] = waveGenerator.getWave(hz, frame, type) * vol;
+				music.get(frame)[channel] = waveGenerator.getWave(hz, frame, type) * volume[channel] * vol;
 			}
 		}
 
@@ -65,45 +66,48 @@ public class Tones {
 		return music;
 	}
 	
-	public ArrayList<double[]> snare(double volume) {
+	public ArrayList<double[]> snare(double[] volume) {
 		return snareHat(volume, .9997);
 	}
 	
-	public ArrayList<double[]> hihat(double volume) {
+	public ArrayList<double[]> hihat(double[] volume) {
 		return snareHat(volume, .9990);
 	}
 	
-	private ArrayList<double[]> snareHat(double volume, double decay) {
-		double finalVolume = volume / 100;
+	private ArrayList<double[]> snareHat(double[] volume, double decay) {
+		double masterVol = 1;
+		double finalVolume = masterVol / 100;
 		//volume * decay^numFrames = finalVolume
-		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
+		int numFrames = (int) (Math.log(finalVolume / masterVol) / Math.log(decay));
 		ArrayList<double[]> hit = new ArrayList<double[]>(numFrames);
 		for(int frame = 0; frame < numFrames; frame++) {
 			hit.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				hit.get(frame)[channel] = waveGenerator.rand() * volume;
+				hit.get(frame)[channel] = waveGenerator.rand() * masterVol * volume[channel];
+				
 			}
-			volume *= decay;
+			masterVol *= decay;
 		}
 		return hit;
 	}
 	
 	//hz = 30 or 40 is great for kick
-	public ArrayList<double[]> drum(double hz, double volume) {
+	public ArrayList<double[]> drum(double hz, double[] volume) {
 		double hzStart = hz;
 		double hzEnd = hzStart / 2;
 		double decay = .9995;
-		double finalVolume = volume / 100;
+		double masterVol = 1;
+		double finalVolume = masterVol / 100;
 		//volume * decay^numFrames = finalVolume
-		int numFrames = (int) (Math.log(finalVolume / volume) / Math.log(decay));
+		int numFrames = (int) (Math.log(finalVolume / masterVol) / Math.log(decay));
 		ArrayList<double[]> hit = new ArrayList<double[]>(numFrames);
 		for(int frame = 0; frame < numFrames; frame++) {
 			hit.add(new double[numChannels]);
 			for (int channel = 0; channel < numChannels; channel++) {
-				hit.get(frame)[channel] = waveGenerator.sin(hzStart, frame) * volume * (1-frame / numFrames);
-				hit.get(frame)[channel] += waveGenerator.sin(hzEnd, frame) * volume * (frame / numFrames);
+				hit.get(frame)[channel] = waveGenerator.sin(hzStart, frame) * masterVol * volume[channel] * (1-frame / numFrames);
+				hit.get(frame)[channel] += waveGenerator.sin(hzEnd, frame) * masterVol * volume[channel] * (frame / numFrames);
 			}
-			volume *= decay;
+			masterVol *= decay;
 		}
 		return hit;
 	}

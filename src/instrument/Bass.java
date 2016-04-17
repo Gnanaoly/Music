@@ -1,14 +1,17 @@
 package instrument;
 import java.util.ArrayList;
 
+import composition.Time;
 import music.RandomUtil;
-import music.Time;
+import music.Waves;
+import music.Waves.WaveType;
 
 @SuppressWarnings("serial")
-public class Bass extends ArrayList<Note> {
+public class Bass extends ArrayList<Note> implements Instrument {
 	
 	RandomUtil rand;
 	public int[] riff = null;
+	private Waves.WaveType waveType = Waves.WaveType.triangle;
 	
 	public Bass(Time time, Rhythm rhythm, ChordProgression progression, Melody melody) {
 		rand = new RandomUtil();
@@ -57,7 +60,7 @@ public class Bass extends ArrayList<Note> {
 		return riff;
 	}
 	
-	public void complexifyRiff() {
+	public void complexify() {
 		int prev = riff[0];
 		double probToDoSomething = .2;
 		for(int i = 1; i < riff.length; i++) {
@@ -102,6 +105,40 @@ public class Bass extends ArrayList<Note> {
 			}
 		}
 		return in;
+	}
+
+	@Override
+	public InstrumentType getType() {
+		return InstrumentType.Bass;
+	}
+
+	@Override
+	public Instrument duplicate() {
+		Bass bass = new Bass(this);
+		bass.setBalance(getBalance());
+		return bass;
+	}
+
+	@Override
+	public WaveType getWaveType() {
+		return waveType;
+	}
+
+	@Override
+	public void setWaveType(WaveType type) {
+		waveType = type;
+	}
+
+	private double[] balance;
+	
+	@Override
+	public void setBalance(double[] balance) {
+		this.balance = balance;
+	}
+
+	@Override
+	public double[] getBalance() {
+		return balance;
 	}
 
 }

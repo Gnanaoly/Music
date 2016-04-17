@@ -1,15 +1,17 @@
 package instrument;
 import java.util.ArrayList;
 
-import music.Chord;
+import composition.Time;
 import music.RandomUtil;
-import music.Time;
+import music.Waves;
+import music.Waves.WaveType;
 
 @SuppressWarnings("serial")
-public class ChordProgression extends ArrayList<Chord> {
+public class ChordProgression extends ArrayList<Chord> implements Instrument {
 
 	private Chord tonic;
 	private RandomUtil rand;
+	public Waves.WaveType waveType = Waves.WaveType.sin;
 
 	public ChordProgression(Time time, Chord tonic, double relChordRate, int leadTo) {
 		super();
@@ -104,5 +106,42 @@ public class ChordProgression extends ArrayList<Chord> {
 		ret.imposeChromatic(root.getChromatic());
 		
 		return ret;
+	}
+
+	@Override
+	public InstrumentType getType() {
+		return InstrumentType.ChordProgression;
+	}
+
+	@Override
+	public Instrument duplicate() {
+		return this;
+	}
+
+	@Override
+	public void complexify() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public WaveType getWaveType() {
+		return waveType;
+	}
+
+	@Override
+	public void setWaveType(WaveType type) {
+		waveType = type;
+	}
+	
+	private double[] balance;
+	
+	@Override
+	public void setBalance(double[] balance) {
+		this.balance = balance;
+	}
+
+	@Override
+	public double[] getBalance() {
+		return balance;
 	}
 }

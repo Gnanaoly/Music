@@ -3,15 +3,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import composition.Time;
 import music.RandomUtil;
-import music.Time;
+import music.Waves;
+import music.Waves.WaveType;
 
 @SuppressWarnings("serial")
-public class Melody extends ArrayList<Note> {
+public class Melody extends ArrayList<Note> implements Instrument {
 	
 	RandomUtil rand;
 	
 	private final double chanceAccent = .25;
+	public Waves.WaveType waveType = Waves.WaveType.saw;
 	
 	//Complexity ranges 0 to 1
 	public Melody(Time time, ChordProgression progression, double complexity) {
@@ -87,5 +90,42 @@ public class Melody extends ArrayList<Note> {
 			}
 		}
 		return in;
+	}
+
+	@Override
+	public InstrumentType getType() {
+		return InstrumentType.Melody;
+	}
+
+	@Override
+	public Instrument duplicate() {
+		return this;
+	}
+
+	@Override
+	public void complexify() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public WaveType getWaveType() {
+		return waveType;
+	}
+
+	@Override
+	public void setWaveType(WaveType type) {
+		waveType = type;
+	}
+	
+	private double[] balance;
+	
+	@Override
+	public void setBalance(double[] balance) {
+		this.balance = balance;
+	}
+
+	@Override
+	public double[] getBalance() {
+		return balance;
 	}
 }
