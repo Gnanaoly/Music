@@ -10,6 +10,7 @@ import instrument.Instrument.InstrumentType;
 import music.MusicGenerator;
 import music.RandomUtil;
 import music.Waves;
+import music.Waves.WaveType;
 
 public class Composer {
 
@@ -55,8 +56,7 @@ public class Composer {
 				Rhythm rhythm = new Rhythm(sections[i].time);
 				rhythm.fillEnd();
 				sections[i].addInstrument(rhythm);
-				Chord tonic = new Chord(
-						mainTonic.getScaleNoteHz()[rand.nextInt(mainTonic.getScaleNoteHz().length)],
+				Chord tonic = new Chord(mainTonic.getScaleNoteHz()[rand.nextInt(mainTonic.getScaleNoteHz().length)],
 						Chord.ChordType.values()[rand.nextInt(Chord.ChordType.values().length)]);
 				sections[i].addInstrument(new ChordProgression(sections[i].time, tonic,
 						rand.nextDouble() * sections[i].time.beatsPerMeasure, rand.nextInt(8)));
@@ -68,12 +68,11 @@ public class Composer {
 								(ChordProgression) sections[i].getInstrument(InstrumentType.ChordProgression),
 								(Melody) sections[i].getInstrument(InstrumentType.Melody)));
 
-				Waves.WaveType instWaves[] = new Waves.WaveType[] { Waves.WaveType.sin, Waves.WaveType.saw,
-						Waves.WaveType.square, Waves.WaveType.triangle, Waves.WaveType.aa };
+				WaveType instWaves[] = new Waves.WaveType[] { WaveType.sin, WaveType.saw, WaveType.square,
+						WaveType.triangle, WaveType.aa };
 				for (Instrument instrument : sections[i].getInstruments()) {
 					instrument.setWaveType(instWaves[rand.nextInt(instWaves.length)]);
 				}
-				
 				sections[i].startVolume = rand.nextInt(100) + 50;
 				sections[i].endVolume = rand.nextInt(100) + 50;
 				sections[i].randomizeBalances();

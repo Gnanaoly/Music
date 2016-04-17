@@ -22,10 +22,17 @@ public class Tones {
 
 	public ArrayList<double[]> toneFlat(double hz, double duration, double buildIn, double buildOut, double[] volume,
 			Waves.WaveType type) {
-		return toneBend(hz, hz, duration, buildIn, buildOut, volume, type);
+		return toneGliss(hz, hz, duration, buildIn, buildOut, volume, type);
+	}
+	
+	public ArrayList<double[]> toneBend(double hzStart, double hzEnd, double duration, double ratio, double buildIn, double buildOut,
+			double[] volume, Waves.WaveType type) {
+		ArrayList<double[]> tone = toneGliss(hzStart, hzEnd, duration * ratio, buildIn, 0, volume, type);
+		tone.addAll(toneFlat(hzEnd, duration * (1-ratio), 0, buildOut, volume, type));
+		return tone;
 	}
 
-	public ArrayList<double[]> toneBend(double hzStart, double hzEnd, double duration, double buildIn, double buildOut,
+	public ArrayList<double[]> toneGliss(double hzStart, double hzEnd, double duration, double buildIn, double buildOut,
 			double[] volume, Waves.WaveType type) {
 		int numFrames = (int) (sampleRate * duration);
 		double masterVol = 1;
@@ -57,9 +64,7 @@ public class Tones {
 		// Remove final partial wave so that we don't click
 		for (int frame = music.size() - 1; frame > 0; frame--) {
 			double val = music.get(frame)[0];
-			for (int channel = 0; channel < numChannels; channel++) {
-				music.get(frame)[channel] = 0;
-			}
+			music.remove(frame);
 			if (val > 0 && music.get(frame - 1)[0] <= 0)
 				break;
 		}

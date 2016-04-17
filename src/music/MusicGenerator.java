@@ -47,7 +47,7 @@ public class MusicGenerator {
 		ArrayList<double[]> music = new ArrayList<double[]>();
 		double t = 0;
 		for (int i = 0; i < sections.length; i++) {
-			util.add(music, secs[i], t, false);
+			util.add(music, secs[i], t);
 			t += sections[i].time.secondsPerBeat * sections[i].time.beatsPerMeasure * sections[i].time.numMeasures;
 			//Avoid running out of heap space:
 			secs[i] = null;
@@ -92,12 +92,12 @@ public class MusicGenerator {
 			} else {
 				for (double hz : progression.get(c - 1).getTriadHz()) {
 					util.add(add, toneGenerator.toneFlat(hz, time.secondsPerBeat * (beforeSwitch + 1), .01, .01, vol,
-							progression.getWaveType()), time.secondsPerBeat * (c - beforeSwitch - 1), false);
+							progression.getWaveType()), time.secondsPerBeat * (c - beforeSwitch - 1));
 				}
 				beforeSwitch = 0;
 			}
 		}
-		util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs);
 	}
 
 	private void addRhythm(ArrayList<double[]> music, Rhythm rhythm, double offsetSecs, Time time, Section section) {
@@ -139,10 +139,10 @@ public class MusicGenerator {
 					tone = new ArrayList<double[]>();
 					break;
 				}
-				util.add(add, tone, r * time.secondsPerSubdivide(), false);
+				util.add(add, tone, r * time.secondsPerSubdivide());
 			}
 		}
-		util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs);
 	}
 
 	private void addNotes(ArrayList<double[]> music, Instrument instrument, double offsetSecs, Time time, Section section) {
@@ -165,17 +165,15 @@ public class MusicGenerator {
 					}
 				}
 				if (note.bendFromPrev) {
-					tone = toneGenerator.toneBend(note.prevHz, note.hz, noteTime * .2, .01, 0, vol, instrument.getWaveType());
-					util.add(tone, toneGenerator.toneFlat(note.hz, noteTime * .8, 0, .01, vol, instrument.getWaveType()), noteTime * .2,
-							true);
+					tone = toneGenerator.toneBend(note.prevHz, note.hz, noteTime, .2, .01, .01, vol, instrument.getWaveType());
 				} else {
 					tone = toneGenerator.toneFlat(note.hz, noteTime, .01, .01, vol, instrument.getWaveType());
 				}
-				util.add(add, tone, t * time.secondsPerSubdivide(), false);
+				util.add(add, tone, t * time.secondsPerSubdivide());
 			}
 			t += note.lengthSubdivides;
 		}
-		util.add(music, add, offsetSecs, false);
+		util.add(music, add, offsetSecs);
 	}
 
 	public byte[] test() {

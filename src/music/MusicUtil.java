@@ -38,30 +38,11 @@ public class MusicUtil {
 		return ret;
 	}
 
-	public void add(ArrayList<double[]> music, ArrayList<double[]> add, double offsetSeconds, boolean noClick) {
+	public void add(ArrayList<double[]> music, ArrayList<double[]> add, double offsetSeconds) {
 		int offsetFrames = (int) (offsetSeconds * sampleRate);
 
 		for (int i = music.size(); i < add.size() + offsetFrames; i++) {
 			music.add(new double[numChannels]);
-		}
-
-		if (noClick && offsetSeconds > 0) {
-			int noClickOffset;
-			for (noClickOffset = offsetFrames; noClickOffset > 0; noClickOffset--) {
-				boolean shouldBreak = false;
-				for (int channel = 0; channel < numChannels; channel++) {
-					if (music.get(noClickOffset)[channel] != 0)
-						shouldBreak = true;
-				}
-				if (shouldBreak)
-					break;
-			}
-			if (2 * music.get(noClickOffset)[0]
-					- music.get(noClickOffset - 1)[0] < (music.get(noClickOffset)[0] - music.get(noClickOffset - 1)[0])
-							/ 2)
-				noClickOffset++;
-			if ((double) (noClickOffset) / offsetFrames > .99 && noClickOffset < offsetFrames)
-				offsetFrames = noClickOffset;
 		}
 
 		for (int frame = 0; frame < add.size(); frame++) {

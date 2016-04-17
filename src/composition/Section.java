@@ -64,8 +64,11 @@ public class Section {
 			double[] balance = new double[numChannels];
 			for(int i = 0; i < numChannels; i++) {
 				balance[i] = rand.nextDouble() * .25 + .75;
-				if(instrument.getType() == InstrumentType.Melody && instrument.getWaveType() == WaveType.sin)
-					balance[i] *= 10;
+				if(instrument.getType() == InstrumentType.Melody) {
+					if(instrument.getWaveType() != WaveType.square || instrument.getWaveType() != WaveType.saw) {
+						balance[i] *= 7;
+					}
+				}
 			}
 			instrument.setBalance(balance);
 		}
