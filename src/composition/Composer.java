@@ -1,12 +1,10 @@
 package composition;
 
-import instrument.Bass;
 import instrument.Chord;
 import instrument.ChordProgression;
 import instrument.Instrument;
-import instrument.Melody;
-import instrument.Rhythm;
 import instrument.Instrument.InstrumentType;
+import instrument.InstrumentFactory;
 import music.MusicGenerator;
 import music.RandomUtil;
 import music.Waves;
@@ -30,8 +28,13 @@ public class Composer {
 		Chord mainTonic = new Chord(rand.nextInt(100) + 100,
 				Chord.ChordType.values()[rand.nextInt(Chord.ChordType.values().length)]);
 
-		Section sections[] = new Section[rand.nextInt(5) + 3];
-		for (int i = 0; i < sections.length; i++) {
+		Section sections[] = new Section[rand.nextInt(5) + 4];
+		
+		int measuresInSection = rand.nextEven(2, 8);
+		int beatsPerMeasure = rand.nextInt(7) + 3;
+		int subdivide = beatsPerMeasure * (rand.nextInt(3) + 3);
+		sections[0] = intro(new Time(secondsPerBeat, beatsPerMeasure, subdivide, measuresInSection), mainTonic);
+		for (int i = 1; i < sections.length; i++) {
 			int id = rand.nextInt(sections.length / 2 + 1);
 			for (int j = 0; j < i; j++) {
 				if (sections[j].id == id) {
@@ -42,37 +45,33 @@ public class Composer {
 				}
 			}
 			if (sections[i] == null) {
-				int measuresInSection = rand.nextEven(8, 16);
-				int beatsPerMeasure = rand.nextInt(7) + 3;
-				int subdivide = beatsPerMeasure * (rand.nextInt(3) + 3);
+				measuresInSection = rand.nextEven(8, 16);
+				beatsPerMeasure = rand.nextInt(7) + 3;
+				subdivide = beatsPerMeasure * (rand.nextInt(3) + 3);
 				double spb = secondsPerBeat;
 				if (rand.nextDouble() < chanceToChangeTime) {
 					spb = rand.nextDouble() + .2;
 				}
 				Time time = new Time(spb, beatsPerMeasure, subdivide, measuresInSection);
 
-				sections[i] = new Section(id);
-				sections[i].time = time;
-				Rhythm rhythm = new Rhythm(sections[i].time);
-				rhythm.fillEnd();
-				sections[i].addInstrument(rhythm);
+				sections[i] = new Section(id, time);
+
 				Chord tonic = new Chord(mainTonic.getScaleNoteHz()[rand.nextInt(mainTonic.getScaleNoteHz().length)],
 						Chord.ChordType.values()[rand.nextInt(Chord.ChordType.values().length)]);
-				sections[i].addInstrument(new ChordProgression(sections[i].time, tonic,
-						rand.nextDouble() * sections[i].time.beatsPerMeasure, rand.nextInt(8)));
-				sections[i].addInstrument(new Melody(sections[i].time,
-						(ChordProgression) sections[i].getInstrument(InstrumentType.ChordProgression),
-						1 - (rand.nextDouble() / 4)));
-				sections[i].addInstrument(
-						new Bass(sections[i].time, (Rhythm) sections[i].getInstrument(InstrumentType.Rhythm),
-								(ChordProgression) sections[i].getInstrument(InstrumentType.ChordProgression),
-								(Melody) sections[i].getInstrument(InstrumentType.Melody)));
+
+				ChordProgression progression = new ChordProgression(sections[i].time, tonic,
+						rand.nextDouble() * sections[i].time.beatsPerMeasure, rand.nextInt(8));
 
 				WaveType instWaves[] = new Waves.WaveType[] { WaveType.sin, WaveType.saw, WaveType.square,
 						WaveType.triangle, WaveType.aa };
-				for (Instrument instrument : sections[i].getInstruments()) {
-					instrument.setWaveType(instWaves[rand.nextInt(instWaves.length)]);
+
+				InstrumentFactory factory = new InstrumentFactory(time, progression);
+				for (InstrumentType type : InstrumentType.values()) {
+					WaveType waveType = instWaves[rand.nextInt(instWaves.length)];
+					Instrument inst = factory.getInstrument(type, 1 - (rand.nextDouble() / 4), waveType);
+					sections[i].addInstrument(inst, 0);
 				}
+
 				sections[i].startVolume = rand.nextInt(100) + 50;
 				sections[i].endVolume = rand.nextInt(100) + 50;
 				sections[i].randomizeBalances();
@@ -80,6 +79,39 @@ public class Composer {
 		}
 
 		return generator.getMusic(sections);
+	}
+	
+	private Instrument withDelay(InstrumentFactory factory, Time time, InstrumentType type, int delayMeasures) {
+		WaveType instWaves[] = new Waves.WaveType[] { WaveType.sin, WaveType.saw, WaveType.square,
+				WaveType.triangle, WaveType.aa };
+		time = new Time(time.secondsPerBeat, time.beatsPerMeasure, time.subdivide,
+				time.numMeasures - delayMeasures);
+		ChordProgression progression = new ChordProgression(factory.getChordProgression(), delayMeasures);
+		WaveType waveType = instWaves[rand.nextInt(instWaves.length)];
+		return factory.getInstrument(type, time, progression, 1 - (rand.nextDouble() / 4), waveType);
+	}
+
+	private Section intro(Time time, Chord tonic) {
+		// We'll be super lame and restrict ourselves to a layered intro with an
+		// integer number of measures between
+		// instrument additions. Change later to make more interesting!!!
+		Section section = new Section(100, time); // an ID that won't be chosen later
+		int maxDelay = time.numMeasures;
+		ChordProgression progression = new ChordProgression(time, tonic, rand.nextDouble() * time.beatsPerMeasure,
+				rand.nextInt(8));
+		InstrumentFactory factory = new InstrumentFactory(time, progression);
+		InstrumentType start = InstrumentType.values()[rand.nextInt(InstrumentType.values().length)];
+		section.addInstrument(withDelay(factory, time, start, 0), 0); //Make sure we start with an instrument
+		for (InstrumentType type : InstrumentType.values()) {
+			if(type == start) continue;
+			int delay = rand.nextInt(maxDelay);
+			Instrument inst = withDelay(factory, time, type, delay);
+			section.addInstrument(inst, delay);
+		}
+		section.startVolume = rand.nextInt(100) + 50;
+		section.endVolume = rand.nextInt(100) + 50;
+		section.randomizeBalances();
+		return section;
 	}
 
 }

@@ -1,7 +1,6 @@
 package music;
 
 import composition.Composer;
-import phoneme.Phoneme;
 
 public class Main {
 
@@ -11,7 +10,6 @@ public class Main {
 	static final String path = "/home/nathav63/Downloads/out.wav";
 
 	public static void main(String[] args) {
-		System.out.println(Phoneme.toPhoneme("lawn"));
 		//Lyrics.doStuff();
 		Writer writer = new Writer();
 		MusicGenerator generator = new MusicGenerator(sampleRate, bitsPerSample, numChannels);

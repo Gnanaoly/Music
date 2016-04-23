@@ -1,6 +1,7 @@
 package composition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import instrument.Instrument;
 import instrument.Instrument.InstrumentType;
@@ -16,15 +17,23 @@ public class Section {
 	public double endVolume;
 	private ArrayList<Instrument> instruments;
 	private RandomUtil rand;
+	private HashMap<Instrument, Integer> offset;
 
-	public Section(int id) {
+	public Section(int id, Time time) {
 		this.id = id;
+		this.time = time;
 		instruments = new ArrayList<Instrument>();
 		rand = new RandomUtil();
+		offset = new HashMap<Instrument, Integer>();
 	}
 
-	public void addInstrument(Instrument instrument) {
+	public void addInstrument(Instrument instrument, int offsetMeasures) {
 		instruments.add(instrument);
+		offset.put(instrument, offsetMeasures);
+	}
+	
+	public int getOffsetMeasures(Instrument instrument) {
+		return offset.get(instrument);
 	}
 
 	public void complexify() {
@@ -34,11 +43,10 @@ public class Section {
 	}
 
 	public Section duplicate() {
-		Section section = new Section(id);
+		Section section = new Section(id, time);
 		for (Instrument instrument : instruments) {
-			section.addInstrument(instrument.duplicate());
+			section.addInstrument(instrument.duplicate(), getOffsetMeasures(instrument));
 		}
-		section.time = time;
 		section.startVolume = startVolume;
 		section.endVolume = endVolume;
 		return section;
@@ -64,10 +72,8 @@ public class Section {
 			double[] balance = new double[numChannels];
 			for(int i = 0; i < numChannels; i++) {
 				balance[i] = rand.nextDouble() * .25 + .75;
-				if(instrument.getType() == InstrumentType.Melody) {
-					if(instrument.getWaveType() != WaveType.square || instrument.getWaveType() != WaveType.saw) {
-						balance[i] *= 7;
-					}
+				if(instrument.getWaveType() == WaveType.sin || instrument.getWaveType() == WaveType.aa) {
+						balance[i] *= 5;
 				}
 			}
 			instrument.setBalance(balance);

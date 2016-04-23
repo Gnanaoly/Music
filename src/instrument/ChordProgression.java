@@ -3,29 +3,37 @@ import java.util.ArrayList;
 
 import composition.Time;
 import music.RandomUtil;
-import music.Waves;
-import music.Waves.WaveType;
 
 @SuppressWarnings("serial")
-public class ChordProgression extends ArrayList<Chord> implements Instrument {
+public class ChordProgression extends ArrayList<Chord> {
 
 	private Chord tonic;
 	private RandomUtil rand;
-	public Waves.WaveType waveType = Waves.WaveType.sin;
+	private Time time;
 
 	public ChordProgression(Time time, Chord tonic, double relChordRate, int leadTo) {
-		super();
+		this.time = time;
 		this.tonic = tonic;
 		this.rand = new RandomUtil();
 		generateProgression(time, relChordRate, leadTo);
 	}
 	
+	public ChordProgression(ChordProgression progression, int measuresRemovedFromStart) {
+		this.time = progression.time;
+		this.tonic = progression.tonic;
+		this.rand = progression.rand;
+		for(int i = measuresRemovedFromStart * time.beatsPerMeasure; i < progression.size(); i++) {
+			add(progression.get(i));
+		}
+	}
+	
+	public Chord getChordAtSubdivide(int subdivide) {
+		return(get(subdivide * time.beatsPerMeasure / time.subdivide));
+	}
+	
 	//Shoot for relChordRate chords per measure
 	private void generateProgression(Time time, double relChordRate, int leadTo) {
 		clear();
-		/*for(int i = 1; i <= 8; i++) {
-			add(getNth(tonic, i));
-		}*/
 		add(tonic);
 		while(size() < time.beatsPerMeasure * (time.numMeasures - 1)) { //Save last measure to resolve
 			Chord prev = get(size()-1);
@@ -58,10 +66,6 @@ public class ChordProgression extends ArrayList<Chord> implements Instrument {
 			add(getNth(tonic, leadTo+1));
 			add(getNth(tonic, leadTo+4));
 		}
-	}
-	
-	private Chord getTriToneSub() {
-		return null;
 	}
 	
 	private Chord getNth(Chord root, int n) {
@@ -106,42 +110,5 @@ public class ChordProgression extends ArrayList<Chord> implements Instrument {
 		ret.imposeChromatic(root.getChromatic());
 		
 		return ret;
-	}
-
-	@Override
-	public InstrumentType getType() {
-		return InstrumentType.ChordProgression;
-	}
-
-	@Override
-	public Instrument duplicate() {
-		return this;
-	}
-
-	@Override
-	public void complexify() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public WaveType getWaveType() {
-		return waveType;
-	}
-
-	@Override
-	public void setWaveType(WaveType type) {
-		waveType = type;
-	}
-	
-	private double[] balance;
-	
-	@Override
-	public void setBalance(double[] balance) {
-		this.balance = balance;
-	}
-
-	@Override
-	public double[] getBalance() {
-		return balance;
 	}
 }

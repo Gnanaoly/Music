@@ -5,10 +5,10 @@ import music.Waves.WaveType;
 public interface Instrument {
 	
 	public enum InstrumentType {
+		Rhythm,
 		Melody,
 		Bass,
-		Rhythm,
-		ChordProgression
+		Keys
 	}
 	
 	public InstrumentType getType();

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import composition.Section;
 import composition.Time;
-import instrument.ChordProgression;
 import instrument.Instrument;
 import instrument.Note;
 import instrument.Rhythm;
@@ -49,7 +48,7 @@ public class MusicGenerator {
 		for (int i = 0; i < sections.length; i++) {
 			util.add(music, secs[i], t);
 			t += sections[i].time.secondsPerBeat * sections[i].time.beatsPerMeasure * sections[i].time.numMeasures;
-			//Avoid running out of heap space:
+			// Avoid running out of heap space:
 			secs[i] = null;
 			sections[i] = null;
 		}
@@ -58,17 +57,23 @@ public class MusicGenerator {
 
 	private ArrayList<double[]> makeChorus(Section section) {
 		ArrayList<double[]> ret = new ArrayList<double[]>();
-		for(Instrument instrument : section.getInstruments()) {
-			switch(instrument.getType()) {
+		for (Instrument instrument : section.getInstruments()) {
+			switch (instrument.getType()) {
 			case Melody:
+				addNotes(ret, instrument, section.getOffsetMeasures(instrument) * section.time.subdivide
+						* section.time.secondsPerSubdivide(), section.time, section);
+				break;
 			case Bass:
-				addNotes(ret, instrument, 0, section.time, section);
+				addNotes(ret, instrument, section.getOffsetMeasures(instrument) * section.time.subdivide
+						* section.time.secondsPerSubdivide(), section.time, section);
+				break;
+			case Keys:
+				addNotes(ret, instrument, section.getOffsetMeasures(instrument) * section.time.subdivide
+						* section.time.secondsPerSubdivide(), section.time, section);
 				break;
 			case Rhythm:
-				addRhythm(ret, (Rhythm) instrument, 0, section.time, section);
-				break;
-			case ChordProgression:
-				addProgression(ret, (ChordProgression) instrument, 0, section.time, section);
+				addRhythm(ret, (Rhythm) instrument, section.getOffsetMeasures(instrument) * section.time.subdivide
+						* section.time.secondsPerSubdivide(), section.time, section);
 				break;
 			default:
 				break;
@@ -77,35 +82,12 @@ public class MusicGenerator {
 		return ret;
 	}
 
-	private void addProgression(ArrayList<double[]> music, ChordProgression progression, double offsetSecs, Time time,
-			Section section) {
-		int beforeSwitch = 0;
-		ArrayList<double[]> add = new ArrayList<double[]>();
-		for (int c = 1; c < progression.size(); c++) {
-			double[] vol = progression.getBalance().clone();
-			for(int i = 0; i < vol.length; i++) {
-				vol[i] *= c * (section.endVolume - section.startVolume) / (time.beatsPerMeasure * time.numMeasures)
-						+ section.startVolume;
-			}
-			if (c != progression.size() - 1 && progression.get(c).equals(progression.get(c - 1))) {
-				beforeSwitch++;
-			} else {
-				for (double hz : progression.get(c - 1).getTriadHz()) {
-					util.add(add, toneGenerator.toneFlat(hz, time.secondsPerBeat * (beforeSwitch + 1), .01, .01, vol,
-							progression.getWaveType()), time.secondsPerBeat * (c - beforeSwitch - 1));
-				}
-				beforeSwitch = 0;
-			}
-		}
-		util.add(music, add, offsetSecs);
-	}
-
 	private void addRhythm(ArrayList<double[]> music, Rhythm rhythm, double offsetSecs, Time time, Section section) {
 		ArrayList<double[]> add = new ArrayList<double[]>();
 		for (int r = 0; r < rhythm.size(); r++) {
 			for (int drum = 0; drum < rhythm.get(r).size(); drum++) {
 				double[] vol = rhythm.getBalance().clone();
-				for(int i = 0; i < vol.length; i++) {
+				for (int i = 0; i < vol.length; i++) {
 					vol[i] *= r * (section.endVolume - section.startVolume) / (time.subdivide * time.numMeasures)
 							+ section.startVolume;
 				}
@@ -145,29 +127,36 @@ public class MusicGenerator {
 		util.add(music, add, offsetSecs);
 	}
 
-	private void addNotes(ArrayList<double[]> music, Instrument instrument, double offsetSecs, Time time, Section section) {
+	private void addNotes(ArrayList<double[]> music, Instrument instrument, double offsetSecs, Time time,
+			Section section) {
 		ArrayList<double[]> add = new ArrayList<double[]>();
 		@SuppressWarnings("unchecked")
 		ArrayList<Note> notes = (ArrayList<Note>) instrument;
 		int t = 0;
 		for (Note note : notes) {
-			if (note.hz == 0) {
+			if (note.hz.length == 0) {
 
 			} else {
-				ArrayList<double[]> tone;
+				ArrayList<double[]> tone = new ArrayList<double[]>();
 				double noteTime = note.lengthSubdivides * time.secondsPerSubdivide();
 				double[] vol = instrument.getBalance().clone();
-				for(int i = 0; i < vol.length; i++) {
+				for (int i = 0; i < vol.length; i++) {
 					vol[i] *= t * (section.endVolume - section.startVolume) / (time.subdivide * time.numMeasures)
 							+ section.startVolume;
-					if(note.accent) {
+					vol[i] /= note.hz.length;
+					if (note.accent) {
 						vol[i] *= 1.2;
 					}
 				}
-				if (note.bendFromPrev) {
-					tone = toneGenerator.toneBend(note.prevHz, note.hz, noteTime, .2, .01, .01, vol, instrument.getWaveType());
-				} else {
-					tone = toneGenerator.toneFlat(note.hz, noteTime, .01, .01, vol, instrument.getWaveType());
+				for (int hz = 0; hz < note.hz.length; hz++) {
+					if (note.bendFromPrev) {
+						util.add(tone, toneGenerator.toneBend(note.prevHz[hz], note.hz[hz], noteTime, .2, .01, .01, vol,
+								instrument.getWaveType()), 0);
+					} else {
+						util.add(tone,
+								toneGenerator.toneFlat(note.hz[hz], noteTime, .01, .01, vol, instrument.getWaveType()),
+								0);
+					}
 				}
 				util.add(add, tone, t * time.secondsPerSubdivide());
 			}

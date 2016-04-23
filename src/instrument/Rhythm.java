@@ -9,7 +9,7 @@ import music.Waves.WaveType;
 @SuppressWarnings("serial")
 public class Rhythm extends ArrayList<ArrayList<Rhythm.Drum>> implements Instrument {
 
-	RandomUtil rand;
+	private RandomUtil rand;
 
 	public enum Drum {
 		snare, hihat, kick, tom1, tom2, cymbal;
