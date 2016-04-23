@@ -26,8 +26,8 @@ public class Rhythm extends ArrayList<ArrayList<Rhythm.Drum>> implements Instrum
 			add(new ArrayList<Rhythm.Drum>());
 		}
 		drumSteady(Drum.kick, rand.nextInt(4) + 2, rand.nextInt(2), time);
-		drumSteady(Drum.snare, rand.nextInt(8) + 2, rand.nextInt(2), time);
-		drumSteady(Drum.hihat, rand.nextInt(10) + 2, rand.nextInt(2), time);
+		drumSteady(Drum.snare, rand.nextInt(8) + 4, rand.nextInt(2), time);
+		drumSteady(Drum.hihat, rand.nextInt(10) + 4, rand.nextInt(2), time);
 		expand(time.numMeasures);
 	}
 
