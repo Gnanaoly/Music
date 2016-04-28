@@ -17,6 +17,7 @@ public class InstrumentFactory {
 		this.time = time;
 		this.progression = progression;
 		this.rhythm = new Rhythm(time);
+		rhythm.fillEnd();
 		this.instrumentWaves = instrumentWaves;
 	}
 	

@@ -5,7 +5,9 @@ package phoneme;
  */
 
 public class PhonWaveData {
-	
+
+	public static final double recordHz = 20000;
+
 	private static final double IYcos[] = { -2.38720, 2.18718, -2.47245, -0.45249, 1.87714, -1.38851, -1.41312, 1.49434,
 			-0.54684, 0.83636 };
 	private static final double IYsin[] = { -12.30418, 5.23806, 1.09730, -2.55118, 0.19248, 1.19324, -0.87553, 0.72046,
@@ -155,4 +157,13 @@ public class PhonWaveData {
 	private static final double OY2hz[] = { 3, 2, 1, 10, 13, 12, 4, 9, 11, 14, 5, 8, 19, 18, 7 };
 	public static final double OY2[][] = { OY2cos, OY2sin, OY2hz };
 	public static final int OY2recordFrames = 94;
+	
+	private static final double Pcos[] = { 13.938, 8.3533, -6.9972, 11.473, 4.7612, 8.3217, -6.1905, -10.663, -1.7156,
+			-7.8728, -7.516, -7.959, 4.3592, -0.86249, 4.488, 2.1342, 5.0155, -4.1394, -5.554, 5.8372 };
+	private static final double Psin[] = { 6.0126, -12.528, -11.222, -2.4648, 10.552, -7.5588, -9.3752, 0.4292, -10.157,
+			5.7705, 5.7165, -4.8351, 8.1064, 8.3784, -6.9669, 7.6034, 6.0557, -6.1718, 4.7014, -4.1574 };
+	private static final double Phz[] = { 107, 3, 101, 102, 98, 106, 4, 6, 269, 132, 7, 5, 86, 111, 257, 108, 95, 267,
+			270, 110 };
+	public static final double P[][] = { Pcos, Psin, Phz };
+	public static final int PrecordFrames = 1795;
 }

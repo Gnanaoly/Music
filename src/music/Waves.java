@@ -31,7 +31,8 @@ public class Waves {
 		aw1,
 		aw2,
 		oy1,
-		oy2
+		oy2,
+		p
 	}
 
 	public Waves(int sampleRate)
@@ -68,7 +69,8 @@ public class Waves {
 		case aw2: return phonWaves.aw2(hertz, frame);
 		case oy1: return phonWaves.oy1(hertz, frame);
 		case oy2: return phonWaves.oy2(hertz, frame);
-
+		case p: return phonWaves.p(hertz, frame);
+		
 		default: return sin(hertz, frame);
 		}
 	}

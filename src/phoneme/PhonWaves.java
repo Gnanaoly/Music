@@ -90,4 +90,9 @@ public class PhonWaves {
 	public double oy2(double hertz, double frame) {
 		return getAmp(hertz, frame, PhonWaveData.OY2, PhonWaveData.OY2recordFrames);
 	}
+	
+	public double pHz = PhonWaveData.recordHz / PhonWaveData.PrecordFrames;
+	public double p(double hertz, double frame) {
+		return getAmp(hertz, frame, PhonWaveData.P, PhonWaveData.PrecordFrames);
+	}
 }

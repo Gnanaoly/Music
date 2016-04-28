@@ -1,6 +1,7 @@
 package music;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import composition.Section;
 import composition.Time;
@@ -21,8 +22,9 @@ public class MusicGenerator {
 	}
 
 	public byte[] getMusic(final Section sections[]) {
+		System.out.println("Starting parallel stuff");
 		@SuppressWarnings("unchecked")
-		final ArrayList<double[]>[] secs = (ArrayList<double[]>[]) new ArrayList[sections.length];
+		final LinkedList<double[]>[] secs = (LinkedList<double[]>[]) new LinkedList[sections.length];
 		Thread[] threads = new Thread[sections.length];
 		for (int i = 0; i < sections.length; i++) {
 			final int num = i;
@@ -43,7 +45,7 @@ public class MusicGenerator {
 
 		System.out.println("Done doing parallel stuff");
 
-		ArrayList<double[]> music = new ArrayList<double[]>();
+		LinkedList<double[]> music = new LinkedList<double[]>();
 		double t = 0;
 		for (int i = 0; i < sections.length; i++) {
 			util.add(music, secs[i], t);
@@ -55,8 +57,8 @@ public class MusicGenerator {
 		return util.format(music);
 	}
 
-	private ArrayList<double[]> makeChorus(Section section) {
-		ArrayList<double[]> ret = new ArrayList<double[]>();
+	private LinkedList<double[]> makeChorus(Section section) {
+		LinkedList<double[]> ret = new LinkedList<double[]>();
 		for (Instrument instrument : section.getInstruments()) {
 			switch (instrument.getType()) {
 			case Melody:
@@ -82,8 +84,8 @@ public class MusicGenerator {
 		return ret;
 	}
 
-	private void addRhythm(ArrayList<double[]> music, Rhythm rhythm, double offsetSecs, Time time, Section section) {
-		ArrayList<double[]> add = new ArrayList<double[]>();
+	private void addRhythm(LinkedList<double[]> music, Rhythm rhythm, double offsetSecs, Time time, Section section) {
+		LinkedList<double[]> add = new LinkedList<double[]>();
 		for (int r = 0; r < rhythm.size(); r++) {
 			for (int drum = 0; drum < rhythm.get(r).size(); drum++) {
 				double[] vol = rhythm.getBalance().clone();
@@ -118,18 +120,19 @@ public class MusicGenerator {
 					tone = toneGenerator.drum(150, vol);
 					break;
 				default:
-					tone = new ArrayList<double[]>();
+					tone = null;
 					break;
 				}
-				util.add(add, tone, r * time.secondsPerSubdivide());
+				if (tone != null)
+					util.add(add, tone, r * time.secondsPerSubdivide());
 			}
 		}
 		util.add(music, add, offsetSecs);
 	}
 
-	private void addNotes(ArrayList<double[]> music, Instrument instrument, double offsetSecs, Time time,
+	private void addNotes(LinkedList<double[]> music, Instrument instrument, double offsetSecs, Time time,
 			Section section) {
-		ArrayList<double[]> add = new ArrayList<double[]>();
+		LinkedList<double[]> add = new LinkedList<double[]>();
 		@SuppressWarnings("unchecked")
 		ArrayList<Note> notes = (ArrayList<Note>) instrument;
 		int t = 0;
@@ -167,7 +170,7 @@ public class MusicGenerator {
 
 	public byte[] test() {
 		double[] vol = new double[] { 100, 100 };
-		return util.format(toneGenerator.toneFlat(200, 2, 0, 0, vol, Waves.WaveType.aa));
+		return util.format(toneGenerator.toneFlat(10, 2, 0, 0, vol, Waves.WaveType.p));
 	}
 
 }

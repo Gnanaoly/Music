@@ -25,6 +25,7 @@ public class Composer {
 
 	public byte[] compose() {
 
+		//Set the wave types for each instrument
 		instrumentWaves = new HashMap<InstrumentType, WaveType>();
 		WaveType instWaves[] = new Waves.WaveType[] { WaveType.sin, WaveType.saw, WaveType.square, WaveType.triangle,
 				WaveType.aa };
@@ -33,7 +34,7 @@ public class Composer {
 		}
 
 		double secondsPerBeat = rand.nextDouble() + .2;
-		double chanceToChangeTime = .25;
+		double chanceToChangeTime = .25; //Probability a section will diverge from secondsPerBeat
 
 		Chord mainTonic = new Chord(rand.nextInt(100) + 100,
 				Chord.ChordType.values()[rand.nextInt(Chord.ChordType.values().length)]);
@@ -75,7 +76,7 @@ public class Composer {
 				InstrumentFactory factory = new InstrumentFactory(time, progression, instrumentWaves);
 				for (InstrumentType type : InstrumentType.values()) {
 					Instrument inst = factory.getInstrument(type, 1 - (rand.nextDouble() / 4));
-					sections[i].addInstrument(inst, 0);
+					sections[i].addInstrument(inst);
 				}
 
 				sections[i].startVolume = rand.nextInt(100) + 50;
@@ -109,7 +110,7 @@ public class Composer {
 				rand.nextInt(8));
 		InstrumentFactory factory = new InstrumentFactory(time, progression, instrumentWaves);
 		InstrumentType start = InstrumentType.values()[rand.nextInt(InstrumentType.values().length)];
-		section.addInstrument(withDelay(factory, time, start, 0), 0); 
+		section.addInstrument(withDelay(factory, time, start, 0)); 
 		for (InstrumentType type : InstrumentType.values()) {
 			if (type == start)
 				continue;
@@ -132,7 +133,7 @@ public class Composer {
 		InstrumentFactory factory = new InstrumentFactory(time, progression, instrumentWaves);
 		for (InstrumentType type : InstrumentType.values()) {
 			Instrument inst = factory.getInstrument(type, 1 - (rand.nextDouble() / 4));
-			section.addInstrument(inst, 0);
+			section.addInstrument(inst);
 		}
 
 		section.startVolume = rand.nextInt(100) + 50;

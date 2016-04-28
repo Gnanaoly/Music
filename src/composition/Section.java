@@ -32,6 +32,10 @@ public class Section {
 		offset.put(instrument, offsetMeasures);
 	}
 	
+	public void addInstrument(Instrument instrument) {
+		addInstrument(instrument, 0);
+	}
+	
 	public int getOffsetMeasures(Instrument instrument) {
 		return offset.get(instrument);
 	}
@@ -73,7 +77,7 @@ public class Section {
 			for(int i = 0; i < numChannels; i++) {
 				balance[i] = rand.nextDouble() * .25 + .75;
 				if(instrument.getWaveType() == WaveType.sin || instrument.getWaveType() == WaveType.aa) {
-						balance[i] *= 5;
+						balance[i] *= 4;
 				}
 			}
 			instrument.setBalance(balance);

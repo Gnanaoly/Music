@@ -29,23 +29,20 @@ public class Bass extends ArrayList<Note> implements Instrument {
 	private void generateBass(Time time, Rhythm rhythm, ChordProgression progression) {
 		riff = getRiff(time, rhythm);
 		complexify();
+		
 		Note note = new Note();
-		for (int i = 0; i < time.numMeasures; i++) {
-			for (int j = 0; j < riff.length; j++) {
-				if (riff[j] != Integer.MAX_VALUE) {
-					note.hz = new double[] { putInRange(
-							progression.get((j * time.beatsPerMeasure / time.subdivide) + i * time.beatsPerMeasure)
-									.getScaleNoteHz())[riff[j]] };
-					add(note);
-					note = new Note();
-					note.lengthSubdivides = 1;
-				} else {
-					note.lengthSubdivides++;
-				}
+		for (int i = 0; i < time.subdivide * time.numMeasures; i++) {
+			note.lengthSubdivides++;
+			if (riff[i % riff.length] != Integer.MAX_VALUE && (note.hz.length == 0
+					|| note.hz[0] != progression.getChordAtSubdivide(i).getScaleNoteHz()[riff[i%riff.length]])) {
+				add(note);
+				note = new Note();
+				note.hz = putInRange(new double[]{progression.getChordAtSubdivide(i).getScaleNoteHz()[riff[i%riff.length]]});
+			} else if (riff[i % riff.length] == Integer.MAX_VALUE && note.hz.length != 0) {
+				add(note);
+				note = new Note();
 			}
 		}
-		note.hz = new double[] { putInRange(progression.get(progression.size() - 1).getScaleNoteHz())[0] };
-		add(note);
 	}
 
 	private int[] getRiff(Time time, Rhythm rhythm) {

@@ -1,6 +1,7 @@
 package music;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 public class MusicUtil {
 
@@ -13,41 +14,61 @@ public class MusicUtil {
 		this.sampleRate = sampleRate;
 		this.bitsPerSample = bitsPerSample;
 		this.numChannels = numChannels;
-		this.maxVol = Math.pow(2, bitsPerSample - 1)-1;
+		this.maxVol = Math.pow(2, bitsPerSample - 1) - 1;
 	}
 
-	public byte[] format(ArrayList<double[]> music) {
+	public byte[] format(List<double[]> music) {
 		double max = 0;
-		for (int frame = 0; frame < music.size(); frame++) {
+		ListIterator<double[]> it = music.listIterator();
+		while(it.hasNext()) {
+			double[] current = it.next();
 			for (int channel = 0; channel < numChannels; channel++) {
-				if (Math.abs(music.get(frame)[channel]) > max)
-					max = Math.abs(music.get(frame)[channel]);
+				if (Math.abs(current[channel]) > max)
+					max = Math.abs(current[channel]);
 			}
 		}
 
+		it = music.listIterator();
 		byte[] ret = new byte[numChannels * music.size() * bitsPerSample / 8];
-		for (int frame = 0; frame < music.size(); frame++) {
+		int frame = 0;
+		while(it.hasNext()) {
+			double[] current = it.next();
 			for (int channel = 0; channel < numChannels; channel++) {
-				music.get(frame)[channel] *= maxVol / max;
+				current[channel] *= maxVol / max;
 				for (int byt = 0; byt < bitsPerSample / 8; byt++) {
 					ret[frame * numChannels * bitsPerSample / 8 + channel * bitsPerSample / 8
-							+ byt] = (byte) ((int) (music.get(frame)[channel]) >> byt * 8);
+							+ byt] = (byte) ((int) (current[channel]) >> byt * 8);
 				}
 			}
+			frame++;
 		}
 		return ret;
 	}
 
-	public void add(ArrayList<double[]> music, ArrayList<double[]> add, double offsetSeconds) {
+	public void add(List<double[]> music, List<double[]> add, double offsetSeconds) {
 		int offsetFrames = (int) (offsetSeconds * sampleRate);
 
-		for (int i = music.size(); i < add.size() + offsetFrames; i++) {
-			music.add(new double[numChannels]);
+		ListIterator<double[]> musIt;
+		ListIterator<double[]> addIt;
+		
+		if(music.size() < offsetFrames) {
+			musIt = music.listIterator(music.size());
+			while(music.size() < offsetFrames) {
+				musIt.add(new double[numChannels]);
+			}
 		}
-
-		for (int frame = 0; frame < add.size(); frame++) {
-			for (int channel = 0; channel < numChannels; channel++) {
-				music.get(frame + offsetFrames)[channel] += add.get(frame)[channel];
+		
+		musIt = music.listIterator(offsetFrames);
+		addIt = add.listIterator();
+		while(addIt.hasNext()) {
+			if (! musIt.hasNext()) {
+				musIt.add(addIt.next());
+			} else {
+				double[] musCurrent = musIt.next();
+				double[] addCurrent = addIt.next();
+				for (int channel = 0; channel < numChannels; channel++) {
+					musCurrent[channel] += addCurrent[channel];
+				}
 			}
 		}
 	}
